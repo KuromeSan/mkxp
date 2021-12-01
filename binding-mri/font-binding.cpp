@@ -50,7 +50,7 @@ collectStrings(VALUE obj, std::vector<std::string> &out)
 	}
 }
 
-DEF_TYPE(Font);
+DEF_ALLOCFUNC(Font);
 
 RB_METHOD(fontDoesExist)
 {
@@ -261,7 +261,7 @@ void
 fontBindingInit()
 {
 	VALUE klass = rb_define_class("Font", rb_cObject);
-	rb_define_alloc_func(klass, classAllocate<&FontType>);
+	rb_define_alloc_func(klass, FontAllocate);
 
 	Font::initDefaultDynAttribs();
 	wrapProperty(klass, &Font::getDefaultColor(), "default_color", ColorType);

@@ -90,7 +90,7 @@ void raiseRbExc(const Exception &exc)
 void
 raiseDisposedAccess(VALUE self)
 {
-	const char *klassName = RTYPEDDATA_TYPE(self)->wrap_struct_name;
+	const char *klassName = rb_obj_classname(self);
 	char buf[32];
 
 	strncpy(buf, klassName, sizeof(buf));

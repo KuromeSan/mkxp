@@ -27,7 +27,8 @@
 #include "binding-util.h"
 #include "binding-types.h"
 
-DEF_TYPE(Bitmap);
+DEF_ALLOCFUNC(Bitmap);
+
 
 static const char *objAsStringPtr(VALUE obj)
 {
@@ -438,7 +439,7 @@ void
 bitmapBindingInit()
 {
 	VALUE klass = rb_define_class("Bitmap", rb_cObject);
-	rb_define_alloc_func(klass, classAllocate<&BitmapType>);
+	rb_define_alloc_func(klass, BitmapAllocate);
 
 	disposableBindingInit<Bitmap>(klass);
 

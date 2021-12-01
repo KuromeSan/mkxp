@@ -26,7 +26,8 @@
 
 #include "bitmap.h"
 
-DEF_TYPE_CUSTOMNAME(WindowVX, "Window");
+DEF_ALLOCFUNC(WindowVX);
+
 
 void bitmapInitProps(Bitmap *b, VALUE self);
 
@@ -134,7 +135,7 @@ void
 windowVXBindingInit()
 {
 	VALUE klass = rb_define_class("Window", rb_cObject);
-	rb_define_alloc_func(klass, classAllocate<&WindowVXType>);
+	rb_define_alloc_func(klass, WindowVXAllocate);
 
 	disposableBindingInit     <WindowVX>(klass);
 	viewportElementBindingInit<WindowVX>(klass);

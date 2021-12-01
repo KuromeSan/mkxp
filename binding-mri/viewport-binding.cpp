@@ -27,7 +27,7 @@
 #include "binding-util.h"
 #include "binding-types.h"
 
-DEF_TYPE(Viewport);
+DEF_ALLOCFUNC(Viewport);
 
 RB_METHOD(viewportInitialize)
 {
@@ -88,7 +88,9 @@ void
 viewportBindingInit()
 {
 	VALUE klass = rb_define_class("Viewport", rb_cObject);
-	rb_define_alloc_func(klass, classAllocate<&ViewportType>);
+
+	rb_define_alloc_func(klass, ViewportAllocate);
+
 
 	disposableBindingInit  <Viewport>(klass);
 	flashableBindingInit   <Viewport>(klass);

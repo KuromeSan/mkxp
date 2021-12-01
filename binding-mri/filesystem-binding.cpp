@@ -25,7 +25,6 @@
 #include "filesystem.h"
 #include "util.h"
 
-#include "ruby/encoding.h"
 #include "ruby/intern.h"
 
 static void
@@ -37,7 +36,8 @@ fileIntFreeInstance(void *inst)
 	SDL_FreeRW(ops);
 }
 
-DEF_TYPE_CUSTOMFREE(FileInt, fileIntFreeInstance);
+DEF_ALLOCFUNC_CUSTOMFREE(FileInt, fileIntFreeInstance);
+
 
 static VALUE
 fileIntForPath(const char *path, bool rubyExc)
@@ -122,6 +122,13 @@ RB_METHOD(fileIntBinmode)
 	return Qnil;
 }
 
+RB_METHOD(fileIntPos) {
+    SDL_RWops *ops = getPrivateData<SDL_RWops>(self);
+    
+    long long pos = SDL_RWtell(ops); // Will return -1 if it doesn't work
+    return LL2NUM(pos);
+}
+
 VALUE
 kernelLoadDataInt(const char *filename, bool rubyExc)
 {
@@ -170,60 +177,23 @@ RB_METHOD(kernelSaveData)
 	return Qnil;
 }
 
-static VALUE stringForceUTF8(VALUE arg)
-{
-	if (RB_TYPE_P(arg, RUBY_T_STRING) && ENCODING_IS_ASCII8BIT(arg))
-		rb_enc_associate_index(arg, rb_utf8_encindex());
-
-	return arg;
-}
-
-static VALUE customProc(VALUE arg, VALUE proc)
-{
-	VALUE obj = stringForceUTF8(arg);
-	obj = rb_funcall2(proc, rb_intern("call"), 1, &obj);
-
-	return obj;
-}
-
-RB_METHOD(_marshalLoad)
-{
-	RB_UNUSED_PARAM;
-
-	VALUE port, proc = Qnil;
-
-	rb_get_args(argc, argv, "o|o", &port, &proc RB_ARG_END);
-
-	VALUE utf8Proc;
-	if (NIL_P(proc))
-		utf8Proc = rb_proc_new(RUBY_METHOD_FUNC(stringForceUTF8), Qnil);
-	else
-		utf8Proc = rb_proc_new(RUBY_METHOD_FUNC(customProc), proc);
-
-	VALUE marsh = rb_const_get(rb_cObject, rb_intern("Marshal"));
-
-	VALUE v[] = { port, utf8Proc };
-	return rb_funcall2(marsh, rb_intern("_mkxp_load_alias"), ARRAY_SIZE(v), v);
-}
-
 void
 fileIntBindingInit()
 {
 	VALUE klass = rb_define_class("FileInt", rb_cIO);
-	rb_define_alloc_func(klass, classAllocate<&FileIntType>);
+	rb_define_alloc_func(klass, FileIntAllocate);
 
 	_rb_define_method(klass, "read", fileIntRead);
 	_rb_define_method(klass, "getbyte", fileIntGetByte);
+	
+	
+	rb_define_alias(klass, "getc", "getbyte");
+    	_rb_define_method(klass, "pos", fileIntPos);
+
 	_rb_define_method(klass, "binmode", fileIntBinmode);
 	_rb_define_method(klass, "close", fileIntClose);
 
 	_rb_define_module_function(rb_mKernel, "load_data", kernelLoadData);
 	_rb_define_module_function(rb_mKernel, "save_data", kernelSaveData);
 
-	/* We overload the built-in 'Marshal::load()' function to silently
-	 * insert our utf8proc that ensures all read strings will be
-	 * UTF-8 encoded */
-	VALUE marsh = rb_const_get(rb_cObject, rb_intern("Marshal"));
-	rb_define_alias(rb_singleton_class(marsh), "_mkxp_load_alias", "load");
-	_rb_define_module_function(marsh, "load", _marshalLoad);
 }

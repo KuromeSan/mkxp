@@ -28,7 +28,7 @@
 #include "binding-util.h"
 #include "binding-types.h"
 
-DEF_TYPE(Sprite);
+DEF_ALLOCFUNC(Sprite);
 
 RB_METHOD(spriteInitialize)
 {
@@ -98,7 +98,7 @@ void
 spriteBindingInit()
 {
 	VALUE klass = rb_define_class("Sprite", rb_cObject);
-	rb_define_alloc_func(klass, classAllocate<&SpriteType>);
+	rb_define_alloc_func(klass, SpriteAllocate);
 
 	disposableBindingInit     <Sprite>(klass);
 	flashableBindingInit      <Sprite>(klass);
