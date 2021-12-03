@@ -294,7 +294,7 @@ source_group("Embedded Source" FILES ${EMBEDDED_INPUT} ${EMBEDDED_SOURCE})
 ## Setup binding source ##
 
 if (BINDING STREQUAL "MRI")
-	set(MRIVERSION "2.1" CACHE STRING "Version of MRI to link with")
+	set(MRIVERSION "1.8" CACHE STRING "Version of MRI to link with")
 	pkg_check_modules(MRI REQUIRED ruby-${MRIVERSION})
 	list(APPEND DEFINES
 		BINDING_MRI
@@ -434,7 +434,8 @@ target_link_libraries(${PROJECT_NAME}
 	${PHYSFS_LIBRARIES}
 	${PIXMAN_LIBRARIES}
 	${Boost_LIBRARIES}
-	${MRI_LIBRARIES}
+#	${MRI_LIBRARIES}
+	ruby-static
 	${VORBISFILE_LIBRARIES}
 	${FLUID_LIBRARIES}
 	${OPENAL_LIBRARY}
