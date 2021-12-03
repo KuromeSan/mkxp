@@ -20,7 +20,9 @@
 */
 
 #include "eventthread.h"
-
+#ifdef __vita__
+#include <psp2/ctrl.h>
+#endif
 #include <SDL_events.h>
 #include <SDL_joystick.h>
 #include <SDL_messagebox.h>
@@ -105,6 +107,7 @@ EventThread::EventThread()
       showCursor(false)
 {}
 
+
 void EventThread::process(RGSSThreadData &rtData)
 {
 	SDL_Event event;
@@ -165,7 +168,8 @@ void EventThread::process(RGSSThreadData &rtData)
 			Debug() << "EventThread: Event error";
 			break;
 		}
-
+		
+		
 		if (sMenu && sMenu->onEvent(event))
 		{
 			if (sMenu->destroyReq())

@@ -126,8 +126,8 @@ struct SharedStatePrivate
 			fileSystem.addPath(archPath.c_str());
 			fclose(tmp);
 		}
-
-		fileSystem.addPath(".");
+		
+		fileSystem.addPath("app0:/");
 
 		for (size_t i = 0; i < config.rtps.size(); ++i)
 			fileSystem.addPath(config.rtps[i].c_str());

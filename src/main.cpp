@@ -46,6 +46,21 @@
 
 #include "icon.png.xxd"
 
+#ifdef __vita__
+#include <psp2/power.h>
+#include <psp2/appmgr.h>
+#include <psp2/kernel/processmgr.h> 
+
+#include <taihen.h>
+
+#include "vita/fios2.h" // vitasdk headers are broken for userland fios2.. so uh use mine!
+
+int _newlib_heap_size_user   = 104857600;
+unsigned int sceLibcHeapSize = 10485760;
+unsigned int sceLibcHeapExtendedAlloc = 1;
+
+#endif
+
 static void
 rgssThreadError(RGSSThreadData *rtData, const std::string &msg)
 {
@@ -193,6 +208,48 @@ static void setupWindowIcon(const Config &conf, SDL_Window *win)
 
 int main(int argc, char *argv[])
 {
+
+#ifdef __vita__
+	scePowerSetArmClockFrequency(444);
+        scePowerSetBusClockFrequency(222);
+	scePowerSetGpuClockFrequency(222);
+        scePowerSetGpuXbarClockFrequency(166);
+        
+        // Load Kernel Module
+	char titleid[12];        
+	char kplugin_path[0x200];
+        sceAppMgrAppParamGetString(0, 12, titleid , 256);
+
+        sprintf(kplugin_path, "ux0:app/%s/module/gpu_fix.skprx", titleid);
+        
+        int ret = taiLoadStartKernelModule(kplugin_path, 0, NULL, 0);
+        if(ret < 0 && ret != 0x8002d013){
+        	printf("Failed to load gpu_fix.skprx 0x%x\n",ret);
+        	sceKernelExitProcess(0);
+        }
+
+        // Create the Read/Writable app0: overlay
+	SceUID pid = sceKernelGetProcessId();
+	SceFiosKernelOverlay ov;
+	SceFiosKernelOverlayID ovId;
+	
+	memset(&ov, 0, sizeof(SceFiosKernelOverlay));
+	
+	ov.type = SCE_FIOS_OVERLAY_TYPE_WRITABLE;
+	ov.order = SCE_FIOS_OVERLAY_ORDER_USER_FIRST;
+	ov.pid = pid;
+	strncpy(ov.src, "savedata0:", sizeof(ov.src));
+	strncpy(ov.dst, "app0:", sizeof(ov.dst));
+	ov.src_len = strnlen(ov.src, sizeof(ov.src));
+	ov.dst_len = strnlen(ov.dst, sizeof(ov.dst));
+
+	ret = sceFiosKernelOverlayAddForProcess02(pid, &ov, &ovId);
+	if(ret < 0){
+        	printf("Failed to create fios2 overlay 0x%x\n", ret);
+        	sceKernelExitProcess(0);
+        }
+
+#endif
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
 

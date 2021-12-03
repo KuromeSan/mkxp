@@ -12,6 +12,8 @@
 #define FLUID_LIB "libfluidsynth.1.dylib"
 #elif __WINDOWS__
 #define FLUID_LIB "fluidsynth.dll"
+#elif __vita__
+#define FLUID_LIB "fluidsynth.suprx"
 #else
 #error "platform not recognized"
 #endif

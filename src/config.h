@@ -65,6 +65,21 @@ struct Config
 	std::string iconPath;
 	std::string execName;
 	std::string titleLanguage;
+	
+	bool VITA_EMULATE_KEYBOARD;
+	int CTRL_DPAD_UP;
+	int CTRL_DPAD_DOWN;
+	int CTRL_DPAD_LEFT;
+	int CTRL_DPAD_RIGHT;
+	int CTRL_BUTTON_CROSS;
+	int CTRL_BUTTON_CIRCLE;
+	int CTRL_BUTTON_SQUARE;
+	int CTRL_BUTTON_TRIANGLE;
+	int CTRL_BUTTON_R1;
+	int CTRL_BUTTON_L1;
+	int CTRL_BUTTON_START;
+	int CTRL_BUTTON_SELECT;
+
 
 	struct
 	{

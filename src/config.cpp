@@ -144,8 +144,11 @@ std::set<T> setFromVec(const std::vector<T> &vec)
 typedef std::vector<std::string> StringVec;
 namespace po = boost::program_options;
 
+#ifdef __vita__
+#define CONF_FILE "app0:/mkxp.conf"
+#else
 #define CONF_FILE "mkxp.conf"
-
+#endif
 Config::Config()
 {}
 
@@ -156,7 +159,7 @@ void Config::read(int argc, char *argv[])
 	PO_DESC(debugMode, bool, false) \
 	PO_DESC(printFPS, bool, false) \
 	PO_DESC(winResizable, bool, false) \
-	PO_DESC(fullscreen, bool, false) \
+	PO_DESC(fullscreen, bool, true) \
 	PO_DESC(fixedAspectRatio, bool, true) \
 	PO_DESC(smoothScaling, bool, true) \
 	PO_DESC(vsync, bool, false) \
@@ -179,14 +182,13 @@ void Config::read(int argc, char *argv[])
 	PO_DESC(iconPath, std::string, "") \
 	PO_DESC(execName, std::string, "Game") \
 	PO_DESC(titleLanguage, std::string, "") \
-	PO_DESC(midi.soundFont, std::string, "") \
+	PO_DESC(midi.soundFont, std::string, "app0:/soundfont.sf2") \
 	PO_DESC(midi.chorus, bool, false) \
 	PO_DESC(midi.reverb, bool, false) \
 	PO_DESC(SE.sourceCount, int, 6) \
 	PO_DESC(customScript, std::string, "") \
 	PO_DESC(pathCache, bool, true) \
-	PO_DESC(useScriptNames, bool, false)
-
+	PO_DESC(useScriptNames, bool, false) 
 // Not gonna take your shit boost
 #define GUARD_ALL( exp ) try { exp } catch(...) {}
 

@@ -139,6 +139,7 @@ namespace FBO
 
 	static inline void clear()
 	{
+		printf("GL.CLEAR\n");
 		gl.Clear(GL_COLOR_BUFFER_BIT);
 	}
 }

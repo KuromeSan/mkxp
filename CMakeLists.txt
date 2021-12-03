@@ -1,11 +1,25 @@
 cmake_minimum_required(VERSION 2.8.11)
 Project(mkxp)
 
+
 ## Setup options ##
 
 option(SHARED_FLUID "Dynamically link fluidsynth at build time" OFF)
 option(WORKDIR_CURRENT "Keep current directory on startup" OFF)
 option(FORCE32 "Force 32bit compile on 64bit OS" OFF)
+option(VITA "Compile for PS Vita" ON)
+
+IF(VITA)
+
+set(CMAKE_TOOLCHAIN_FILE "$ENV{VITASDK}/share/vita.toolchain.cmake" CACHE PATH "toolchain file")
+include("$ENV{VITASDK}/share/vita.cmake" REQUIRED)
+list(APPEND DEFINES
+	GLES2_HEADER
+	SHARED_FLUID
+)
+ENDIF()
+
+
 set(BINDING "MRI" CACHE STRING "The Binding Type (MRI, MRUBY, NULL)")
 set(EXTERNAL_LIB_PATH "" CACHE PATH "External precompiled lib prefix")
 
@@ -24,6 +38,7 @@ IF(WORKDIR_CURRENT)
 		WORKDIR_CURRENT
 	)
 ENDIF()
+
 
 IF(FORCE32)
 	if(APPLE)
@@ -258,6 +273,7 @@ if (SHARED_FLUID)
 	)
 endif()
 
+
 ## Process Embeddeds ##
 
 find_program(XXD_EXE xxd
@@ -294,7 +310,7 @@ source_group("Embedded Source" FILES ${EMBEDDED_INPUT} ${EMBEDDED_SOURCE})
 ## Setup binding source ##
 
 if (BINDING STREQUAL "MRI")
-	set(MRIVERSION "2.1" CACHE STRING "Version of MRI to link with")
+	set(MRIVERSION "1.8" CACHE STRING "Version of MRI to link with")
 	pkg_check_modules(MRI REQUIRED ruby-${MRIVERSION})
 	list(APPEND DEFINES
 		BINDING_MRI
@@ -424,6 +440,42 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 	${FLUID_INCLUDE_DIRS}
 	${OPENAL_INCLUDE_DIR}
 )
+if(VITA)
+	list(APPEND PLATFORM_LIBRARIES
+		SceLibKernel_stub 
+		SceSysmodule_stub
+		SceCtrl_stub
+		SceGxm_stub
+		ScePgf_stub
+		ScePvf_stub		
+		SceIofilemgr_stub_weak
+		SceAppMgr_stub
+		SceAudioIn_stub 
+		SceIme_stub
+		SceFios2_stub
+		SceFios2Kernel_stub
+         	ScePower_stub
+		SceAudio_stub
+		fluidlite
+		FLAC
+		pthread
+		jpeg
+		webp
+		freetype
+		png
+		m 
+		mpg123
+		z
+		taihen_stub
+		vorbis
+		vorbisfile
+		ogg
+		mikmod
+		libgpu_es4_ext_stub
+		libIMGEGL_stub
+		libGLESv2_stub
+	)
+endif()
 
 target_link_libraries(${PROJECT_NAME}
 	${SIGCXX_LIBRARIES}
@@ -434,13 +486,17 @@ target_link_libraries(${PROJECT_NAME}
 	${PHYSFS_LIBRARIES}
 	${PIXMAN_LIBRARIES}
 	${Boost_LIBRARIES}
-	${MRI_LIBRARIES}
+#	${MRI_LIBRARIES}
+	ruby-static
 	${VORBISFILE_LIBRARIES}
 	${FLUID_LIBRARIES}
 	${OPENAL_LIBRARY}
 	${ZLIB_LIBRARY}
 
 	${PLATFORM_LIBRARIES}
+	
 )
+
+
 
 PostBuildMacBundle(${PROJECT_NAME} "" "${PLATFORM_COPY_LIBS}")
