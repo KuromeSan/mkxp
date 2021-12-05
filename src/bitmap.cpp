@@ -177,6 +177,8 @@ struct BitmapPrivate
 		FBO::bind(gl.fbo);
 	}
 
+
+
 	void pushSetViewport(ShaderBase &shader) const
 	{
 		glState.viewport.pushSet(IntRect(0, 0, gl.width, gl.height));
@@ -758,9 +760,9 @@ void Bitmap::clear()
 	p->bindFBO();
 
 	glState.clearColor.pushSet(Vec4());
-
+	
 	FBO::clear();
-
+	
 	glState.clearColor.pop();
 
 	p->clearTaintedArea();

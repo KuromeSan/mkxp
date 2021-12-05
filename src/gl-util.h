@@ -103,47 +103,104 @@ namespace TEX
 		gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mode ? GL_LINEAR : GL_NEAREST);
 	}
 }
+static int fboCount = 0;
 
 /* Framebuffer Object */
 namespace FBO
 {
 	DEF_GL_ID
 
+
 	inline ID gen()
 	{
+		printf("Creating FBO %i\n", fboCount++);
+
 		ID id;
 		gl.GenFramebuffers(1, &id.gl);
+		
+		GLenum err = GL_NO_ERROR;
+		while((err = gl.GetError()) != GL_NO_ERROR)
+		{
+		    printf("FBO::gen -> glGetError: %x\n", err);
+		}		
 
 		return id;
 	}
 
 	static inline void del(ID id)
 	{
+		printf("Deleting FBO %i\n", fboCount--);
+		if(fboCount < 0)
+			fboCount = 0;
 		gl.DeleteFramebuffers(1, &id.gl);
+		GLenum err = GL_NO_ERROR;
+		while((err = gl.GetError()) != GL_NO_ERROR)
+		{
+		    printf("FBO::del -> glGetError: %x\n", err);
+		}		
+
 	}
 
 	static inline void bind(ID id)
 	{
+		//printf("FBO::bind(%i);\n", id);
 		gl.BindFramebuffer(GL_FRAMEBUFFER, id.gl);
+		GLenum err = GL_NO_ERROR;
+		while((err = gl.GetError()) != GL_NO_ERROR)
+		{
+		    printf("FBO::bind -> glGetError: %x\n", err);
+		}		
+
 	}
 
 	static inline void unbind()
 	{
+		//printf("FBO::bind(0);\n");
 		bind(ID(0));
+		GLenum err = GL_NO_ERROR;
+		while((err = gl.GetError()) != GL_NO_ERROR)
+		{
+		    printf("FBO::unbind -> glGetError: %x\n", err);
+		}		
+
 	}
 
 	static inline void setTarget(TEX::ID target, unsigned colorAttach = 0)
 	{
 		gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttach, GL_TEXTURE_2D, target.gl, 0);
+		GLenum err = GL_NO_ERROR;
+		while((err = gl.GetError()) != GL_NO_ERROR)
+		{
+		    printf("FBO::setTarget -> glGetError: %x\n", err);
+		}		
+
 	}
 
 	static inline void clear()
 	{
-		printf("GL.CLEAR\n");
-		gl.Clear(GL_COLOR_BUFFER_BIT);
+		//printf("FBO::clear();\n");
+		GLenum err = GL_NO_ERROR;
+		do{
+			gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+			err = gl.GetError();
+			if(err != GL_NO_ERROR)
+				printf("FBO::clear -> glGetError: %x\n", err);
+		
+		int a = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if(a != 0x8cd5)
+			printf("glCheckFramebufferStatus: %x\n", a);
+
+				
+		} while(err == GL_OUT_OF_MEMORY);
+		/*
+		GLenum err = GL_NO_ERROR;
+		while((err = gl.GetError()) != (GL_NO_ERROR)
+		{
+		    printf("FBO::clear -> glGetError: %x\n", err);
+		    gl.Clear(GL_COLOR_BUFFER_BIT);
+		}*/		
 	}
 }
-
 template<GLenum target>
 struct GenericBO
 {
@@ -154,37 +211,86 @@ struct GenericBO
 		ID id;
 		gl.GenBuffers(1, &id.gl);
 
+		GLenum err = GL_NO_ERROR;
+		while((err = gl.GetError()) != GL_NO_ERROR)
+		{
+		    printf("GenericBO::gen -> glGetError: %x\n", err);
+		}		
+
 		return id;
 	}
 
 	static inline void del(ID id)
 	{
+
 		gl.DeleteBuffers(1, &id.gl);
+
+		GLenum err = GL_NO_ERROR;
+		while((err = gl.GetError()) != GL_NO_ERROR)
+		{
+		    printf("GenericBO::del -> glGetError: %x\n", err);
+		}		
+
 	}
 
 	static inline void bind(ID id)
 	{
 		gl.BindBuffer(target, id.gl);
+
+		GLenum err = GL_NO_ERROR;
+		while((err = gl.GetError()) != GL_NO_ERROR)
+		{
+		    printf("GenericBO::bind -> glGetError: %x\n", err);
+		}		
+
 	}
 
 	static inline void unbind()
 	{
 		bind(ID(0));
+		
+		GLenum err = GL_NO_ERROR;
+		while((err = gl.GetError()) != GL_NO_ERROR)
+		{
+		    printf("GenericBO::unbind -> glGetError: %x\n", err);
+		}		
+
 	}
 
 	static inline void uploadData(GLsizeiptr size, const GLvoid *data, GLenum usage = GL_STATIC_DRAW)
 	{
 		gl.BufferData(target, size, data, usage);
+		
+		GLenum err = GL_NO_ERROR;
+		while((err = gl.GetError()) != GL_NO_ERROR)
+		{
+		    printf("GenericBO::uploadData -> glGetError: %x\n", err);
+		}		
+
 	}
 
 	static inline void uploadSubData(GLintptr offset, GLsizeiptr size, const GLvoid *data)
 	{
 		gl.BufferSubData(target, offset, size, data);
+
+		GLenum err = GL_NO_ERROR;
+		while((err = gl.GetError()) != GL_NO_ERROR)
+		{
+		    printf("GenericBO::uploadSubData -> glGetError: %x\n", err);
+		}		
+
 	}
 
 	static inline void allocEmpty(GLsizeiptr size, GLenum usage = GL_STATIC_DRAW)
 	{
 		uploadData(size, 0, usage);
+		
+		GLenum err = GL_NO_ERROR;
+		while((err = gl.GetError()) != GL_NO_ERROR)
+		{
+		    printf("GenericBO::allocEmpty -> glGetError: %x\n", err);
+		}		
+
 	}
 };
 

@@ -38,6 +38,7 @@
 #include "exception.h"
 #include "gl-fun.h"
 
+
 #include "binding.h"
 
 #ifdef __WINDOWS__
@@ -52,6 +53,8 @@
 #include <psp2/kernel/processmgr.h> 
 
 #include <taihen.h>
+
+
 
 #include "vita/fios2.h" // vitasdk headers are broken for userland fios2.. so uh use mine!
 
@@ -214,7 +217,7 @@ int main(int argc, char *argv[])
         scePowerSetBusClockFrequency(222);
 	scePowerSetGpuClockFrequency(222);
         scePowerSetGpuXbarClockFrequency(166);
-        
+        int ret = 0;
         // Load Kernel Module
 	char titleid[12];        
 	char kplugin_path[0x200];
@@ -222,7 +225,7 @@ int main(int argc, char *argv[])
 
         sprintf(kplugin_path, "ux0:app/%s/module/gpu_fix.skprx", titleid);
         
-        int ret = taiLoadStartKernelModule(kplugin_path, 0, NULL, 0);
+        ret = taiLoadStartKernelModule(kplugin_path, 0, NULL, 0);
         if(ret < 0 && ret != 0x8002d013){
         	printf("Failed to load gpu_fix.skprx 0x%x\n",ret);
         	sceKernelExitProcess(0);
@@ -390,6 +393,7 @@ int main(int argc, char *argv[])
 
 	/* Request RGSS thread to stop */
 	rtData.rqTerm.set();
+
 
 	/* Wait for RGSS thread response */
 	for (int i = 0; i < 1000; ++i)
