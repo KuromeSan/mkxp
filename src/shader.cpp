@@ -18,6 +18,10 @@
 ** You should have received a copy of the GNU General Public License
 ** along with mkxp.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifdef __vita__
+#include <vitasdk.h>
+#include <limits.h>
+#endif
 
 #include "shader.h"
 #include "sharedstate.h"
@@ -152,13 +156,32 @@ void Shader::init(const unsigned char *vert, int vertSize,
                   const char *programName)
 {
 	GLint success;
-
+#ifdef __vita__
+	/* is this shader already cached? */
+	char fpath[0x1000];
+	SceUID fd;
+	int ret;
+	int compiled = 0;
+	SceIoStat stats;
+	
+	snprintf(fpath, 0x1000, "ux0:/data/mkxp/shader-cache/%s.prg", programName);
+	
+	int npath = strnlen(fpath, 0x1000);
+	for(int i = 27; i < npath; i++){
+		if(fpath[i] == ':'){
+			fpath[i] = '_';
+		}
+	}
+	ret = sceIoGetstat(fpath, &stats);
+	if(ret < 0)
+	{
+		compile_shader:
+#endif
 	/* Compile vertex shader */
 	setupShaderSource(vertShader, GL_VERTEX_SHADER, vert, vertSize);
 	gl.CompileShader(vertShader);
-
 	gl.GetShaderiv(vertShader, GL_COMPILE_STATUS, &success);
-
+	
 	if (!success)
 	{
 		printShaderLog(vertShader);
@@ -166,6 +189,7 @@ void Shader::init(const unsigned char *vert, int vertSize,
 	                    "GLSL: An error occured while compiling vertex shader '%s' in program '%s'",
 	                    vertName, programName);
 	}
+
 
 	/* Compile fragment shader */
 	setupShaderSource(fragShader, GL_FRAGMENT_SHADER, frag, fragSize);
@@ -191,10 +215,51 @@ void Shader::init(const unsigned char *vert, int vertSize,
 
 	gl.LinkProgram(program);
 
+
+#ifdef __vita__
+		/* Cache Shader */
+		GLenum binaryFormat = GL_SGX_PROGRAM_BINARY_IMG; 		
+		GLint length = 0;
+		GLsizei lengthWritten = 0;
+		 
+		glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH_OES, &length);
+		GLvoid* programBinaryData = (GLvoid*)malloc(length); 
+		gl.GetProgramBinaryOES(program, length, &lengthWritten, &binaryFormat, programBinaryData);
+		
+		fd = sceIoOpen(fpath, SCE_O_WRONLY | SCE_O_CREAT | SCE_O_TRUNC, 0777);
+		sceIoWrite(fd, programBinaryData, length);
+		sceIoClose(fd);
+		
+		free(programBinaryData);
+
+		compiled = 1;
+
+	}
+	else{
+		/* Load cached shader */
+		compiled = 0;
+		GLint sz = stats.st_size;
+		GLvoid* programBinaryData = (GLvoid*)malloc(sz);
+
+		SceUID fd = sceIoOpen(fpath, SCE_O_RDONLY, 0777);
+		int read = sceIoRead(fd, programBinaryData, sz);
+		sceIoClose(fd);
+		
+		gl.ProgramBinaryOES(program, GL_SGX_PROGRAM_BINARY_IMG, programBinaryData, sz);
+				
+		free(programBinaryData);		
+	}
+#endif
 	gl.GetProgramiv(program, GL_LINK_STATUS, &success);
 
 	if (!success)
 	{
+#ifdef __vita__
+		if(!compiled){
+//			printf("Link failed: %x\n", success);
+			goto compile_shader;
+		}
+#endif
 		printProgramLog(program);
 		throw Exception(Exception::MKXPError,
 	                    "GLSL: An error occured while linking program '%s' (vertex '%s', fragment '%s')",

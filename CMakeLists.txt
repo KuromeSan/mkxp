@@ -10,6 +10,8 @@ option(FORCE32 "Force 32bit compile on 64bit OS" OFF)
 option(VITA "Compile for PS Vita" ON)
 
 IF(VITA)
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 set(CMAKE_TOOLCHAIN_FILE "$ENV{VITASDK}/share/vita.toolchain.cmake" CACHE PATH "toolchain file")
 include("$ENV{VITASDK}/share/vita.cmake" REQUIRED)
@@ -448,14 +450,16 @@ if(VITA)
 		SceGxm_stub
 		ScePgf_stub
 		ScePvf_stub		
-		SceIofilemgr_stub_weak
+		SceIofilemgr_stub
 		SceAppMgr_stub
 		SceAudioIn_stub 
 		SceIme_stub
 		SceFios2_stub
 		SceFios2Kernel_stub
-         	ScePower_stub
+		ScePower_stub
 		SceAudio_stub
+		m
+		z
 		fluidlite
 		FLAC
 		pthread
@@ -463,17 +467,15 @@ if(VITA)
 		webp
 		freetype
 		png
-		m 
 		mpg123
-		z
-		taihen_stub
 		vorbis
 		vorbisfile
 		ogg
 		mikmod
-		libgpu_es4_ext_stub
-		libIMGEGL_stub
-		libGLESv2_stub
+		taihen_stub
+		libgpu_es4_ext_stub_weak
+		libIMGEGL_stub_weak
+		libGLESv2_stub_weak
 	)
 endif()
 

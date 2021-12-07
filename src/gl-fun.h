@@ -203,6 +203,10 @@ typedef void (APIENTRYP _PFNGLRELEASESHADERCOMPILERPROC) (void);
 #define GL_DEBUG_KHR_FUN \
 	GL_FUN(DebugMessageCallback, _PFNGLDEBUGMESSAGECALLBACKPROC)
 
+#define GL_EXTENSION_FUN \
+	GL_FUN(GetProgramBinaryOES, PFNGLGETPROGRAMBINARYOESPROC) \
+	GL_FUN(ProgramBinaryOES, PFNGLPROGRAMBINARYOESPROC)
+
 #define GL_GREMEMDY_FUN \
 	GL_FUN(StringMarker, _PFNGLSTRINGMARKERPROC)
 
@@ -218,7 +222,8 @@ struct GLFunctions
 	GL_VAO_FUN
 	GL_DEBUG_KHR_FUN
 	GL_GREMEMDY_FUN
-
+	GL_EXTENSION_FUN
+	
 	bool glsles;
 	bool unpack_subimage;
 	bool npot_repeat;

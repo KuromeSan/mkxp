@@ -103,7 +103,8 @@ namespace TEX
 		gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mode ? GL_LINEAR : GL_NEAREST);
 	}
 }
-static int fboCount = 0;
+
+//#define DEBUG 1
 
 /* Framebuffer Object */
 namespace FBO
@@ -113,92 +114,94 @@ namespace FBO
 
 	inline ID gen()
 	{
-		printf("Creating FBO %i\n", fboCount++);
 
+#ifdef DEBUG
+		printf("FBO::gen()\n");
+#endif
 		ID id;
 		gl.GenFramebuffers(1, &id.gl);
-		
+#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("FBO::gen -> glGetError: %x\n", err);
 		}		
-
+#endif
 		return id;
 	}
 
 	static inline void del(ID id)
 	{
-		printf("Deleting FBO %i\n", fboCount--);
-		if(fboCount < 0)
-			fboCount = 0;
+#ifdef DEBUG
+		printf("FBO::del(%x)\n",id);
+#endif
 		gl.DeleteFramebuffers(1, &id.gl);
+#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("FBO::del -> glGetError: %x\n", err);
 		}		
-
+#endif
 	}
 
 	static inline void bind(ID id)
 	{
-		//printf("FBO::bind(%i);\n", id);
+#ifdef DEBUG
+		printf("FBO::bind(%x)\n",id);
+#endif
 		gl.BindFramebuffer(GL_FRAMEBUFFER, id.gl);
+#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("FBO::bind -> glGetError: %x\n", err);
 		}		
+#endif
 
 	}
 
 	static inline void unbind()
 	{
-		//printf("FBO::bind(0);\n");
 		bind(ID(0));
+#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("FBO::unbind -> glGetError: %x\n", err);
 		}		
-
+#endif
 	}
 
 	static inline void setTarget(TEX::ID target, unsigned colorAttach = 0)
 	{
+#ifdef DEBUG
+		printf("FBO::setTarget(%x,%x)\n",target, colorAttach);
+#endif
 		gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttach, GL_TEXTURE_2D, target.gl, 0);
+#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("FBO::setTarget -> glGetError: %x\n", err);
 		}		
+#endif
 
 	}
 
 	static inline void clear()
 	{
-		//printf("FBO::clear();\n");
+#ifdef DEBUG
+		printf("FBO::clear()\n");
+#endif
+		gl.Clear(GL_COLOR_BUFFER_BIT);
+#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
-		do{
-			gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-			err = gl.GetError();
-			if(err != GL_NO_ERROR)
-				printf("FBO::clear -> glGetError: %x\n", err);
-		
-		int a = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		if(a != 0x8cd5)
-			printf("glCheckFramebufferStatus: %x\n", a);
-
-				
-		} while(err == GL_OUT_OF_MEMORY);
-		/*
-		GLenum err = GL_NO_ERROR;
-		while((err = gl.GetError()) != (GL_NO_ERROR)
+		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("FBO::clear -> glGetError: %x\n", err);
-		    gl.Clear(GL_COLOR_BUFFER_BIT);
-		}*/		
+		}		
+#endif
 	}
 }
 template<GLenum target>
@@ -209,87 +212,115 @@ struct GenericBO
 	static inline ID gen()
 	{
 		ID id;
+#ifdef DEBUG
+		printf("GenericBO::gen()\n");
+#endif
 		gl.GenBuffers(1, &id.gl);
-
+#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("GenericBO::gen -> glGetError: %x\n", err);
 		}		
-
+#endif
 		return id;
 	}
 
 	static inline void del(ID id)
 	{
 
+#ifdef DEBUG
+		printf("GenericBO::del(%x)\n", id);
+#endif
 		gl.DeleteBuffers(1, &id.gl);
-
+#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("GenericBO::del -> glGetError: %x\n", err);
 		}		
-
+#endif
 	}
 
 	static inline void bind(ID id)
 	{
+#ifdef DEBUG
+		printf("GenericBO::bind(%x)\n", id);
+#endif
 		gl.BindBuffer(target, id.gl);
-
+#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("GenericBO::bind -> glGetError: %x\n", err);
 		}		
-
+#endif
 	}
 
 	static inline void unbind()
 	{
 		bind(ID(0));
-		
+#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("GenericBO::unbind -> glGetError: %x\n", err);
 		}		
+#endif
 
 	}
 
 	static inline void uploadData(GLsizeiptr size, const GLvoid *data, GLenum usage = GL_STATIC_DRAW)
 	{
+#ifdef DEBUG
+		printf("GenericBO::uploadData(%x, %x, %x)\n", size, data, usage);
+#endif
 		gl.BufferData(target, size, data, usage);
-		
+#ifdef DEBUG
+		printf("GenericBO::uploadData - iphone 6s \n");
+#endif
+#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("GenericBO::uploadData -> glGetError: %x\n", err);
 		}		
-
+#endif
 	}
 
 	static inline void uploadSubData(GLintptr offset, GLsizeiptr size, const GLvoid *data)
 	{
+#ifdef DEBUG
+		printf("GenericBO::uploadSubData(%x, %x, %x)\n", offset, size, data);
+#endif
 		gl.BufferSubData(target, offset, size, data);
+#ifdef DEBUG
+		printf("GenericBO::uploadSubData - iphone 6s \n", offset, size, data);
+#endif
 
+#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("GenericBO::uploadSubData -> glGetError: %x\n", err);
-		}		
-
+		}
+#endif		
 	}
 
 	static inline void allocEmpty(GLsizeiptr size, GLenum usage = GL_STATIC_DRAW)
 	{
+#ifdef DEBUG
+		printf("GenericBO::allocEmpty(%x, %x)\n", size, usage);
+#endif
+
 		uploadData(size, 0, usage);
-		
+#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("GenericBO::allocEmpty -> glGetError: %x\n", err);
-		}		
+		}
+#endif		
 
 	}
 };

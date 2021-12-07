@@ -32,6 +32,7 @@ public:
 	void bind();
 	static void unbind();
 
+	
 	enum Attribute
 	{
 		Position = 0,

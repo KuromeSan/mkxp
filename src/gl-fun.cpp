@@ -35,7 +35,7 @@ static void parseExtensionsCore(_PFNGLGETINTEGERVPROC GetIntegerv, BoostSet<std:
 {
 	_PFNGLGETSTRINGIPROC GetStringi =
 		(_PFNGLGETSTRINGIPROC) SDL_GL_GetProcAddress("glGetStringi");
-
+		
 	GLint extCount = 0;
 	GetIntegerv(GL_NUM_EXTENSIONS, &extCount);
 
@@ -86,7 +86,6 @@ void initGLFunctions()
 	const size_t glesPrefixN = sizeof(glesPrefix)-1;
 
 	bool gles = false;
-
 	if (!strncmp(ver, glesPrefix, glesPrefixN))
 	{
 		gles = true;
@@ -107,6 +106,11 @@ void initGLFunctions()
 	}
 
 	BoostSet<std::string> ext;
+
+#ifdef __vita__
+	gl.GetProgramBinaryOES = (PFNGLGETPROGRAMBINARYOESPROC) SDL_GL_GetProcAddress("glGetProgramBinaryOES");
+	gl.ProgramBinaryOES = (PFNGLPROGRAMBINARYOESPROC) SDL_GL_GetProcAddress("glProgramBinaryOES");
+#endif
 
 	if (glMajor >= 3)
 		parseExtensionsCore(gl.GetIntegerv, ext);

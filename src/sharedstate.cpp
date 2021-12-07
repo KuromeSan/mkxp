@@ -126,9 +126,16 @@ struct SharedStatePrivate
 			fileSystem.addPath(archPath.c_str());
 			fclose(tmp);
 		}
-		
-		fileSystem.addPath("app0:/");
 
+#ifdef __vita__		
+		fileSystem.addPath("app0:/");
+		fileSystem.addPath("ux0:/data/mkxp/xp-rtp");
+		fileSystem.addPath("ux0:/data/mkxp/vx-rtp");
+		fileSystem.addPath("ux0:/data/mkxp/vxa-rtp");
+
+#else
+		fileSystem.addPath(".");
+#endif
 		for (size_t i = 0; i < config.rtps.size(); ++i)
 			fileSystem.addPath(config.rtps[i].c_str());
 

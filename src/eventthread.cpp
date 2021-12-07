@@ -22,6 +22,7 @@
 #include "eventthread.h"
 #ifdef __vita__
 #include <psp2/ctrl.h>
+#include <psp2/kernel/processmgr.h>
 #endif
 #include <SDL_events.h>
 #include <SDL_joystick.h>
@@ -249,10 +250,13 @@ void EventThread::process(RGSSThreadData &rtData)
 			}
 			break;
 
-		case SDL_QUIT :
+		case SDL_QUIT:
+			#ifdef __vita__
+				sceKernelExitProcess(0); // Shutdown button pressed, Kill right now
+			#endif
+
 			terminate = true;
 			Debug() << "EventThread termination requested";
-
 			break;
 
 		case SDL_KEYDOWN :

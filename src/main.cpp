@@ -48,17 +48,22 @@
 #include "icon.png.xxd"
 
 #ifdef __vita__
+#include <taihen.h>
 #include <psp2/power.h>
 #include <psp2/appmgr.h>
 #include <psp2/kernel/processmgr.h> 
-
-#include <taihen.h>
-
-
+#include <psp2/io/fcntl.h>
+#include <psp2/io/stat.h>
+#include <psp2/kernel/modulemgr.h>
+extern "C"{
+#include <gpu_es4/psp2_pvr_hint.h>
+}
+#include <stdlib.h>
+#include <string.h>
 
 #include "vita/fios2.h" // vitasdk headers are broken for userland fios2.. so uh use mine!
 
-int _newlib_heap_size_user   = 104857600;
+int _newlib_heap_size_user   = 10485760;
 unsigned int sceLibcHeapSize = 10485760;
 unsigned int sceLibcHeapExtendedAlloc = 1;
 
@@ -220,16 +225,26 @@ int main(int argc, char *argv[])
         int ret = 0;
         // Load Kernel Module
 	char titleid[12];        
-	char kplugin_path[0x200];
+	char kplugin_path[0x1000];
         sceAppMgrAppParamGetString(0, 12, titleid , 256);
-
-        sprintf(kplugin_path, "ux0:app/%s/module/gpu_fix.skprx", titleid);
-        
+        snprintf(kplugin_path, 0x1000, "ux0:app/%s/module/gpu_fix.skprx", titleid);
+                
         ret = taiLoadStartKernelModule(kplugin_path, 0, NULL, 0);
         if(ret < 0 && ret != 0x8002d013){
         	printf("Failed to load gpu_fix.skprx 0x%x\n",ret);
         	sceKernelExitProcess(0);
         }
+       
+        // Create data folders. 
+        sceIoMkdir("ux0:/data", 0777);
+        sceIoMkdir("ux0:/data/mkxp", 0777);
+        
+        sceIoMkdir("ux0:/data/mkxp/xp-rtp", 0777);
+        sceIoMkdir("ux0:/data/mkxp/vx-rtp", 0777);
+        sceIoMkdir("ux0:/data/mkxp/vxa-rtp", 0777);
+        
+        sceIoMkdir("ux0:/data/mkxp/shader-cache", 0777);
+
 
         // Create the Read/Writable app0: overlay
 	SceUID pid = sceKernelGetProcessId();
@@ -251,10 +266,38 @@ int main(int argc, char *argv[])
         	printf("Failed to create fios2 overlay 0x%x\n", ret);
         	sceKernelExitProcess(0);
         }
-
 #endif
+
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
+
+
+#ifdef __vita__
+	SDL_setenv("VITA_PVR_SKIP_INIT", "enable", 1);
+
+	PVRSRV_PSP2_APPHINT hint;
+
+        sceKernelLoadStartModule("vs0:sys/external/libfios2.suprx", 0, NULL, 0, NULL, NULL);
+        sceKernelLoadStartModule("vs0:sys/external/libc.suprx", 0, NULL, 0, NULL, NULL);
+        
+        sceKernelLoadStartModule("app0:/module/libgpu_es4_ext.suprx", 0, NULL, 0, NULL, NULL);
+        sceKernelLoadStartModule("app0:/module/libIMGEGL.suprx", 0, NULL, 0, NULL, NULL);
+
+        PVRSRVInitializeAppHint(&hint);
+
+        strcpy(hint.szGLES1, "app0:/module/libGLESv1_CM.suprx");
+        strcpy(hint.szGLES2, "app0:/module/libGLESv2.suprx");
+        strcpy(hint.szWindowSystem, "app0:/module/libpvrPSP2_WSEGL.suprx");
+
+        hint.bDisableHWTextureUpload = 1;
+        hint.bDisableHWTQBufferBlit = 1;
+        hint.bDisableHWTQMipGen = 1;
+        hint.bDisableHWTQNormalBlit = 1;
+        hint.bDisableHWTQTextureUpload = 1;
+
+        
+        PVRSRVCreateVirtualAppHint(&hint);
+#endif
 
 	/* initialize SDL first */
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
@@ -416,6 +459,7 @@ int main(int argc, char *argv[])
 	else
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, conf.windowTitle.c_str(),
 		                         "The RGSS script seems to be stuck and mkxp will now force quit", win);
+	
 
 	if (!rtData.rgssErrorMsg.empty())
 	{
