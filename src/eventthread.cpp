@@ -251,10 +251,6 @@ void EventThread::process(RGSSThreadData &rtData)
 			break;
 
 		case SDL_QUIT:
-			#ifdef __vita__
-				sceKernelExitProcess(0); // Shutdown button pressed, Kill right now
-			#endif
-
 			terminate = true;
 			Debug() << "EventThread termination requested";
 			break;

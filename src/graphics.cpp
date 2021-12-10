@@ -47,6 +47,10 @@
 #include <errno.h>
 #include <algorithm>
 
+#ifdef __vita__
+#include <psp2/kernel/threadmgr.h> 
+#endif
+
 #define DEF_SCREEN_W  (rgssVer == 1 ? 640 : 544)
 #define DEF_SCREEN_H  (rgssVer == 1 ? 480 : 416)
 #define DEF_FRAMERATE (rgssVer == 1 ?  40 :  60)
@@ -493,6 +497,9 @@ struct GraphicsPrivate
 	      fpsLimiter(frameRate),
 	      frozen(false)
 	{
+
+		fpsLimiter.resetFrameAdjust();		
+
 		recalculateScreenSize(rtData);
 		updateScreenResoRatio(rtData);
 
@@ -614,9 +621,10 @@ struct GraphicsPrivate
 	}
 
 	void checkSyncLock()
-	{
+	{	
 		if (!threadData->syncPoint.mainSyncLocked())
 			return;
+					
 
 		/* Releasing the GL context before sleeping and making it
 		 * current again on wakeup seems to avoid the context loss
@@ -625,7 +633,7 @@ struct GraphicsPrivate
 		threadData->syncPoint.waitMainSync();
 		SDL_GL_MakeCurrent(threadData->window, glCtx);
 
-		fpsLimiter.resetFrameAdjust();
+		fpsLimiter.resetFrameAdjust();		
 	}
 };
 

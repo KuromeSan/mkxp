@@ -63,8 +63,8 @@ extern "C"{
 
 #include "vita/fios2.h" // vitasdk headers are broken for userland fios2.. so uh use mine!
 
-int _newlib_heap_size_user   = 10485760;
-unsigned int sceLibcHeapSize = 10485760;
+int _newlib_heap_size_user   = 104857600;
+unsigned int sceLibcHeapSize = 104857600;
 unsigned int sceLibcHeapExtendedAlloc = 1;
 
 #endif
@@ -98,7 +98,10 @@ int rgssThreadFun(void *userdata)
 	const Config &conf = threadData->config;
 	SDL_Window *win = threadData->window;
 	SDL_GLContext glCtx;
-
+	
+#ifdef __vita__
+	SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
+#endif
 	/* Setup GL context */
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 

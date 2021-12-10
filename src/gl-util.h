@@ -22,6 +22,12 @@
 #ifndef GLUTIL_H
 #define GLUTIL_H
 
+//#define DEBUG 1
+
+#ifdef DEBUG
+#include <psp2/kernel/threadmgr.h>
+#endif
+
 #include "gl-fun.h"
 #include "etc-internal.h"
 
@@ -104,8 +110,6 @@ namespace TEX
 	}
 }
 
-//#define DEBUG 1
-
 /* Framebuffer Object */
 namespace FBO
 {
@@ -116,7 +120,8 @@ namespace FBO
 	{
 
 #ifdef DEBUG
-		printf("FBO::gen()\n");
+		int threadId = sceKernelGetThreadId();
+		printf("FBO::gen() called on thread 0x%x\n",threadId);
 #endif
 		ID id;
 		gl.GenFramebuffers(1, &id.gl);
@@ -133,7 +138,8 @@ namespace FBO
 	static inline void del(ID id)
 	{
 #ifdef DEBUG
-		printf("FBO::del(%x)\n",id);
+		int threadId = sceKernelGetThreadId();
+		printf("FBO::del(%x) called on thread 0x%x\n",id, threadId);
 #endif
 		gl.DeleteFramebuffers(1, &id.gl);
 #ifdef DEBUG
@@ -148,7 +154,8 @@ namespace FBO
 	static inline void bind(ID id)
 	{
 #ifdef DEBUG
-		printf("FBO::bind(%x)\n",id);
+		int threadId = sceKernelGetThreadId();
+		printf("FBO::bind(%x) called on thread 0x%x\n",id, threadId);
 #endif
 		gl.BindFramebuffer(GL_FRAMEBUFFER, id.gl);
 #ifdef DEBUG
@@ -176,7 +183,8 @@ namespace FBO
 	static inline void setTarget(TEX::ID target, unsigned colorAttach = 0)
 	{
 #ifdef DEBUG
-		printf("FBO::setTarget(%x,%x)\n",target, colorAttach);
+		int threadId = sceKernelGetThreadId();
+		printf("FBO::setTarget(%x,%x) called on thread 0x%x\n",target, colorAttach, threadId);
 #endif
 		gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttach, GL_TEXTURE_2D, target.gl, 0);
 #ifdef DEBUG
@@ -192,7 +200,8 @@ namespace FBO
 	static inline void clear()
 	{
 #ifdef DEBUG
-		printf("FBO::clear()\n");
+		int threadId = sceKernelGetThreadId();
+		printf("FBO::clear() called on thread 0x%x\n", threadId);
 #endif
 		gl.Clear(GL_COLOR_BUFFER_BIT);
 #ifdef DEBUG
@@ -213,7 +222,8 @@ struct GenericBO
 	{
 		ID id;
 #ifdef DEBUG
-		printf("GenericBO::gen()\n");
+		int threadId = sceKernelGetThreadId();
+		printf("GenericBO::gen() called on thread 0x%x\n", threadId);
 #endif
 		gl.GenBuffers(1, &id.gl);
 #ifdef DEBUG
@@ -230,7 +240,8 @@ struct GenericBO
 	{
 
 #ifdef DEBUG
-		printf("GenericBO::del(%x)\n", id);
+		int threadId = sceKernelGetThreadId();
+		printf("GenericBO::del(%x) called on thread 0x%x\n", id, threadId);
 #endif
 		gl.DeleteBuffers(1, &id.gl);
 #ifdef DEBUG
@@ -245,7 +256,8 @@ struct GenericBO
 	static inline void bind(ID id)
 	{
 #ifdef DEBUG
-		printf("GenericBO::bind(%x)\n", id);
+		int threadId = sceKernelGetThreadId();
+		printf("GenericBO::bind(%x) called on thread 0x%x\n", id, threadId);
 #endif
 		gl.BindBuffer(target, id.gl);
 #ifdef DEBUG
@@ -273,7 +285,8 @@ struct GenericBO
 	static inline void uploadData(GLsizeiptr size, const GLvoid *data, GLenum usage = GL_STATIC_DRAW)
 	{
 #ifdef DEBUG
-		printf("GenericBO::uploadData(%x, %x, %x)\n", size, data, usage);
+		int threadId = sceKernelGetThreadId();
+		printf("GenericBO::uploadData(%x, %x, %x) called on thread 0x%x\n", size, data, usage, threadId);
 #endif
 		gl.BufferData(target, size, data, usage);
 #ifdef DEBUG
@@ -291,7 +304,8 @@ struct GenericBO
 	static inline void uploadSubData(GLintptr offset, GLsizeiptr size, const GLvoid *data)
 	{
 #ifdef DEBUG
-		printf("GenericBO::uploadSubData(%x, %x, %x)\n", offset, size, data);
+		int threadId = sceKernelGetThreadId();
+		printf("GenericBO::uploadSubData(%x, %x, %x) called on thread 0x%x\n", offset, size, data, threadId);
 #endif
 		gl.BufferSubData(target, offset, size, data);
 #ifdef DEBUG
@@ -310,7 +324,8 @@ struct GenericBO
 	static inline void allocEmpty(GLsizeiptr size, GLenum usage = GL_STATIC_DRAW)
 	{
 #ifdef DEBUG
-		printf("GenericBO::allocEmpty(%x, %x)\n", size, usage);
+		int threadId = sceKernelGetThreadId();
+		printf("GenericBO::allocEmpty(%x, %x) called on thread 0x%x\n", size, usage, threadId);
 #endif
 
 		uploadData(size, 0, usage);

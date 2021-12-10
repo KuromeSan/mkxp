@@ -1081,7 +1081,11 @@ void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 	Vec2i gpTexSize;
 	shState->ensureTexSize(txtSurf->w, txtSurf->h, gpTexSize);
 
+#ifndef __vita__
 	bool fastBlit = !p->touchesTaintedArea(posRect) && txtAlpha == 1.0f;
+#else
+	bool fastBlit = false;
+#endif
 
 	if (fastBlit)
 	{

@@ -75,7 +75,7 @@ struct TexPoolPrivate
 	    : maxMemSize(maxMemSize),
 	      memSize(0),
 	      objCount(0),
-	      disabled(true)
+	      disabled(false)
 	{}
 };
 

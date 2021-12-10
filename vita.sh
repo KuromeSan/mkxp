@@ -3,7 +3,7 @@ mkdir build
 cd build
 
 cmake .. -DCMAKE_TOOLCHAIN_FILE=$VITASDK/share/vita.toolchain.cmake
-make -j10
+make -j30
 
 vita-elf-create mkxp mkxp.velf
 vita-make-fself -c mkxp.velf mkxp.self
