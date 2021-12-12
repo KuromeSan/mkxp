@@ -63,6 +63,7 @@ extern "C"{
 
 #include "vita/fios2.h" // vitasdk headers are broken for userland fios2.. so uh use mine!
 
+
 int _newlib_heap_size_user   = 104857600;
 unsigned int sceLibcHeapSize = 104857600;
 unsigned int sceLibcHeapExtendedAlloc = 1;
@@ -225,6 +226,8 @@ int main(int argc, char *argv[])
         scePowerSetBusClockFrequency(222);
 	scePowerSetGpuClockFrequency(222);
         scePowerSetGpuXbarClockFrequency(166);
+        
+	        
         int ret = 0;
         // Load Kernel Module
 	char titleid[12];        
@@ -277,7 +280,6 @@ int main(int argc, char *argv[])
 
 #ifdef __vita__
 	SDL_setenv("VITA_PVR_SKIP_INIT", "enable", 1);
-
 	PVRSRV_PSP2_APPHINT hint;
 
         sceKernelLoadStartModule("vs0:sys/external/libfios2.suprx", 0, NULL, 0, NULL, NULL);

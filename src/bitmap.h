@@ -26,6 +26,12 @@
 #include "etc-internal.h"
 #include "etc.h"
 
+#ifdef __vita__
+#include "gl-util.h"
+using namespace std;
+#include <list>
+#endif
+
 #include <sigc++/signal.h>
 
 class Font;
@@ -47,7 +53,6 @@ public:
 	int width()  const;
 	int height() const;
 	IntRect rect() const;
-
 	void blt(int x, int y,
 	         const Bitmap &source, IntRect rect,
 	         int opacity = 255);

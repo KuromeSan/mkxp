@@ -29,6 +29,7 @@
 
 #include <pixman.h>
 
+
 #include "gl-util.h"
 #include "gl-meta.h"
 #include "quad.h"
@@ -102,23 +103,63 @@ struct BitmapPrivate
 	 * ourselves the expensive blending calculation */
 	pixman_region16_t tainted;
 
+	bool gpuFixed;
+	sigc::connection prepareCon;
+
+
 	BitmapPrivate(Bitmap *self)
 	    : self(self),
 	      megaSurface(0),
-	      surface(0)
+	      surface(0),
+	      gpuFixed(false)
 	{
 		format = SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
 
 		font = &shState->defaultFont();
 		pixman_region_init(&tainted);
+
+#ifdef __vita__
+		prepareCon = shState->prepareDraw.connect(sigc::mem_fun(this, &BitmapPrivate::prepareDraw));
+#endif
 	}
 
 	~BitmapPrivate()
 	{
 		SDL_FreeFormat(format);
 		pixman_region_fini(&tainted);
+#ifdef __vita__
+		prepareCon.disconnect();
+#endif 
+	}
+#ifdef __vita__
+	void vitaGpuFix(){
+		printf("LETS GO!\n");
+		
+		BltShader &shader = shState->shaders().blt;
+		shader.bind();
+		bindFBO();
+		bindTexture(shader);
+		
+		pushSetViewport(shader);
+		TEXFBO &gpTex2 = shState->gpTexFBO(self->width(),self->height());				
+		GLMeta::blitBegin(gpTex2);
+		GLMeta::blitSource(gl);
+		GLMeta::blitRectangle(IntRect(1000,1000,1,1), IntRect(1000,1000,self->width(),self->height()));
+		GLMeta::blitEnd();
+		popViewport();
+	
+
+		gpuFixed = true;
 	}
 
+	void prepareDraw()
+	{
+		if(!gpuFixed)
+			vitaGpuFix();
+	}
+#endif
+
+	
 	void allocSurface()
 	{
 		surface = SDL_CreateRGBSurface(0, gl.width, gl.height, format->BitsPerPixel,
@@ -230,7 +271,7 @@ struct BitmapPrivate
 			SDL_FreeSurface(surface);
 			surface = 0;
 		}
-
+		
 		self->modified();
 	}
 };
@@ -1000,6 +1041,9 @@ void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 
 	if (str[0] == ' ' && str[1] == '\0')
 		return;
+#ifdef DEBUG
+	printf("Bitmap::drawText() -> \"%s\"\n", str);
+#endif
 
 	TTF_Font *font = p->font->getSdlFont();
 	const Color &fontColor = p->font->getColor();
@@ -1081,12 +1125,7 @@ void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 	Vec2i gpTexSize;
 	shState->ensureTexSize(txtSurf->w, txtSurf->h, gpTexSize);
 
-#ifndef __vita__
 	bool fastBlit = !p->touchesTaintedArea(posRect) && txtAlpha == 1.0f;
-#else
-	bool fastBlit = false;
-#endif
-
 	if (fastBlit)
 	{
 		if (squeeze == 1.0f && !shState->config().subImageFix)
@@ -1130,9 +1169,9 @@ void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 				}
 
 				TEX::bind(p->gl.tex);
-
 				if (!subImage)
 				{
+					
 					TEX::uploadSubImage(posRect.x, posRect.y,
 					                    posRect.w, posRect.h,
 					                    txtSurf->pixels, GL_RGBA);
@@ -1145,6 +1184,7 @@ void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 					                           txtSurf, GL_RGBA);
 					GLMeta::subRectImageEnd();
 				}
+				
 			}
 		}
 		else
@@ -1160,14 +1200,18 @@ void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 			GLMeta::blitRectangle(IntRect(0, 0, txtSurf->w, txtSurf->h),
 			                      posRect, true);
 			GLMeta::blitEnd();
+
 		}
 	}
 	else
 	{
+#ifdef DEBUG
+		printf("Bitmap::drawText() -> !fastBlit (!!!)\n");
+#endif
 		/* Aquire a partial copy of the destination
 		 * buffer we're about to render to */
 		TEXFBO &gpTex2 = shState->gpTexFBO(posRect.w, posRect.h);
-
+				
 		GLMeta::blitBegin(gpTex2);
 		GLMeta::blitSource(p->gl);
 		GLMeta::blitRectangle(posRect, Vec2i());
@@ -1176,7 +1220,7 @@ void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 		FloatRect bltRect(0, 0,
 		                  (float) (gpTexSize.x * squeeze) / gpTex2.width,
 		                  (float) gpTexSize.y / gpTex2.height);
-
+		
 		BltShader &shader = shState->shaders().blt;
 		shader.bind();
 		shader.setTexSize(gpTexSize);
@@ -1200,11 +1244,12 @@ void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 
 		p->popViewport();
 	}
-
+	
 	SDL_FreeSurface(txtSurf);
 	p->addTaintedArea(posRect);
 
 	p->onModified();
+	
 }
 
 /* http://www.lemoda.net/c/utf8-to-ucs2/index.html */

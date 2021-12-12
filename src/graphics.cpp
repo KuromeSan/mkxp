@@ -607,6 +607,7 @@ struct GraphicsPrivate
 
 	void redrawScreen()
 	{
+			
 		screen.composite();
 
 		GLMeta::blitBeginScreen(winSize);
@@ -665,7 +666,7 @@ void Graphics::update()
 {
 	p->checkShutDownReset();
 	p->checkSyncLock();
-
+		
 	if (p->frozen)
 		return;
 

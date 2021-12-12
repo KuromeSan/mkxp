@@ -581,6 +581,7 @@ struct WindowPrivate
 
 	void drawControls()
 	{
+
 		if (nullOrDisposed(windowskin) && nullOrDisposed(contents))
 			return;
 

@@ -22,9 +22,7 @@
 #ifndef GLUTIL_H
 #define GLUTIL_H
 
-//#define DEBUG 1
-
-#ifdef DEBUG
+#ifdef __vita__
 #include <psp2/kernel/threadmgr.h>
 #endif
 
@@ -57,6 +55,7 @@ struct ID \
 /* 2D Texture */
 namespace TEX
 {
+
 	DEF_GL_ID
 
 	inline ID gen()
@@ -74,7 +73,18 @@ namespace TEX
 
 	static inline void bind(ID id)
 	{
+	#ifdef DEBUG
+			printf("TEX::bind(0x%x)\n", id.gl);
+	#endif
 		gl.BindTexture(GL_TEXTURE_2D, id.gl);
+	#ifdef DEBUG			
+			GLenum err = GL_NO_ERROR;
+			while((err = gl.GetError()) != GL_NO_ERROR)
+			{
+			    printf("TEX::uploadSubImage -> glGetError: %x\n", err);
+			}	
+	#endif	
+				
 	}
 
 	static inline void unbind()
@@ -86,15 +96,46 @@ namespace TEX
 	{
 		gl.TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 	}
-
 	static inline void uploadSubImage(GLint x, GLint y, GLsizei width, GLsizei height, const void *data, GLenum format)
 	{
+	#ifdef DEBUG
+		printf("TEX::uploadSubImage(%i,%i,%i,%i,0x%x,0x%x)\n", x,y,width,height,data,format);
+	/*	printf("== BEGIN DATA DUMP ==\n");
+		unsigned int sz = (width*height)*4;
+		unsigned char* data2 = (unsigned char*)data;
+		for(int i = 0; i <= sz; i++){
+			printf("%02X", data2[i]);
+		}
+		printf("\n== END DATA DUMP ==\n");
+	*/
+	#endif
 		gl.TexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, format, GL_UNSIGNED_BYTE, data);
+		
+	#ifdef DEBUG
+		
+		GLenum err = GL_NO_ERROR;
+		while((err = gl.GetError()) != GL_NO_ERROR)
+		{
+		    printf("TEX::uploadSubImage -> glGetError: %x\n", err);
+		}	
+	#endif	
 	}
 
 	static inline void allocEmpty(GLsizei width, GLsizei height)
 	{
+	#ifdef DEBUG
+			printf("TEX::allocEmpty(%u, %u)\n", width, height);
+	#endif
+
 		gl.TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+		
+	#ifdef DEBUG
+		GLenum err = GL_NO_ERROR;
+		while((err = gl.GetError()) != GL_NO_ERROR)
+		{
+		    printf("TEX::uploadSubImage -> glGetError: %x\n", err);
+		}	
+	#endif	
 	}
 
 	static inline void setRepeat(bool mode)

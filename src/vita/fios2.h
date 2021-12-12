@@ -1,5 +1,5 @@
-#ifndef _SILICA_FIOS2
-#define _SILICA_FIOS2
+#ifndef _SILICA_FIOS2_H
+#define _SILICA_FIOS2_H
 
 #include <psp2/types.h>
 
