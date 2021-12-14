@@ -279,6 +279,7 @@ int main(int argc, char *argv[])
 
 
 #ifdef __vita__
+	/* 
 	SDL_setenv("VITA_PVR_SKIP_INIT", "enable", 1);
 	PVRSRV_PSP2_APPHINT hint;
 
@@ -298,10 +299,10 @@ int main(int argc, char *argv[])
         hint.bDisableHWTQBufferBlit = 1;
         hint.bDisableHWTQMipGen = 1;
         hint.bDisableHWTQNormalBlit = 1;
-        hint.bDisableHWTQTextureUpload = 1;
-
+        hint.bDisableHWTQTextureUpload = 1; 
         
         PVRSRVCreateVirtualAppHint(&hint);
+        */
 #endif
 
 	/* initialize SDL first */

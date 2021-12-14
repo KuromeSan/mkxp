@@ -130,12 +130,11 @@ struct SharedStatePrivate
 #ifdef __vita__		
 		fileSystem.addPath("app0:/");
 		if(rgssVer == 1)
-			fileSystem.addPath("ux0:/data/mkxp/xp-rtp");
+			fileSystem.addPath("ux0:/data/mkxp/xp-rtp/");
 		if(rgssVer == 2)
-			fileSystem.addPath("ux0:/data/mkxp/vx-rtp");
+			fileSystem.addPath("ux0:/data/mkxp/vx-rtp/");
 		if(rgssVer == 3)
-			fileSystem.addPath("ux0:/data/mkxp/vxa-rtp");
-
+			fileSystem.addPath("ux0:/data/mkxp/vxa-rtp/");
 #else
 		fileSystem.addPath(".");
 #endif

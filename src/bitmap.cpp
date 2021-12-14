@@ -133,29 +133,29 @@ struct BitmapPrivate
 	}
 #ifdef __vita__
 	void vitaGpuFix(){
-		printf("LETS GO!\n");
 		
-		BltShader &shader = shState->shaders().blt;
-		shader.bind();
-		bindFBO();
-		bindTexture(shader);
-		
-		pushSetViewport(shader);
-		TEXFBO &gpTex2 = shState->gpTexFBO(self->width(),self->height());				
-		GLMeta::blitBegin(gpTex2);
-		GLMeta::blitSource(gl);
-		GLMeta::blitRectangle(IntRect(1000,1000,1,1), IntRect(1000,1000,self->width(),self->height()));
-		GLMeta::blitEnd();
-		popViewport();
-	
+		// Force texture upload.		
+		glFlush();
+		glFinish();
 
+		TEXFBO &gpTex = shState->gpTexFBO(0, 0);
+		
+		GLMeta::blitBegin(gpTex);
+		GLMeta::blitSource(gl);
+		GLMeta::blitRectangle(IntRect(0,0,0,0), IntRect(0,0,0,0));
+		GLMeta::blitEnd();
+		
+		glFlush();
+		glFinish();
+		
 		gpuFixed = true;
 	}
 
 	void prepareDraw()
 	{
-		if(!gpuFixed)
-			vitaGpuFix();
+		// TODO: Find out why the fuck this doenst work
+		//if(!gpuFixed)
+		//	vitaGpuFix();
 	}
 #endif
 
@@ -271,6 +271,10 @@ struct BitmapPrivate
 			SDL_FreeSurface(surface);
 			surface = 0;
 		}
+		
+		//gpuFixed = false;
+		// TODO: Make this happen only on PrepareDraw, but like actually working
+		vitaGpuFix();
 		
 		self->modified();
 	}
