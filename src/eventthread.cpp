@@ -563,6 +563,11 @@ void EventThread::updateCursorState(bool inWindow,
 
 void EventThread::requestTerminate()
 {
+#ifdef __vita__
+	Debug() << "EventThread Termination Requested ...";
+	sceKernelExitProcess(0);
+	while(1){sceKernelDelayThread(10000);};
+#endif
 	SDL_Event event;
 	event.type = SDL_QUIT;
 	SDL_PushEvent(&event);

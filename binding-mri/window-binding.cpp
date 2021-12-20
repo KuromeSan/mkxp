@@ -24,7 +24,7 @@
 #include "viewportelement-binding.h"
 #include "binding-util.h"
 
-DEF_ALLOCFUNC(Window);
+DEF_TYPE(Window);
 
 RB_METHOD(windowInitialize)
 {
@@ -73,8 +73,7 @@ void
 windowBindingInit()
 {
 	VALUE klass = rb_define_class("Window", rb_cObject);
-
-	rb_define_alloc_func(klass, WindowAllocate);
+	rb_define_alloc_func(klass, classAllocate<&WindowType>);
 
 	disposableBindingInit     <Window>(klass);
 	viewportElementBindingInit<Window>(klass);

@@ -278,33 +278,6 @@ int main(int argc, char *argv[])
 	SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
 
 
-#ifdef __vita__
-	/* 
-	SDL_setenv("VITA_PVR_SKIP_INIT", "enable", 1);
-	PVRSRV_PSP2_APPHINT hint;
-
-        sceKernelLoadStartModule("vs0:sys/external/libfios2.suprx", 0, NULL, 0, NULL, NULL);
-        sceKernelLoadStartModule("vs0:sys/external/libc.suprx", 0, NULL, 0, NULL, NULL);
-        
-        sceKernelLoadStartModule("app0:/module/libgpu_es4_ext.suprx", 0, NULL, 0, NULL, NULL);
-        sceKernelLoadStartModule("app0:/module/libIMGEGL.suprx", 0, NULL, 0, NULL, NULL);
-
-        PVRSRVInitializeAppHint(&hint);
-
-        strcpy(hint.szGLES1, "app0:/module/libGLESv1_CM.suprx");
-        strcpy(hint.szGLES2, "app0:/module/libGLESv2.suprx");
-        strcpy(hint.szWindowSystem, "app0:/module/libpvrPSP2_WSEGL.suprx");
-
-        hint.bDisableHWTextureUpload = 1;
-        hint.bDisableHWTQBufferBlit = 1;
-        hint.bDisableHWTQMipGen = 1;
-        hint.bDisableHWTQNormalBlit = 1;
-        hint.bDisableHWTQTextureUpload = 1; 
-        
-        PVRSRVCreateVirtualAppHint(&hint);
-        */
-#endif
-
 	/* initialize SDL first */
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
 	{

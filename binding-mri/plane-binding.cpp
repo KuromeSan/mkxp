@@ -25,7 +25,7 @@
 #include "binding-util.h"
 #include "binding-types.h"
 
-DEF_ALLOCFUNC(Plane);
+DEF_TYPE(Plane);
 
 RB_METHOD(planeInitialize)
 {
@@ -58,8 +58,7 @@ void
 planeBindingInit()
 {
 	VALUE klass = rb_define_class("Plane", rb_cObject);
-
-	rb_define_alloc_func(klass, PlaneAllocate);
+	rb_define_alloc_func(klass, classAllocate<&PlaneType>);
 
 	disposableBindingInit<Plane>     (klass);
 	viewportElementBindingInit<Plane>(klass);

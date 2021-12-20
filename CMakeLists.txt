@@ -313,8 +313,43 @@ source_group("Embedded Source" FILES ${EMBEDDED_INPUT} ${EMBEDDED_SOURCE})
 
 ## Setup binding source ##
 
-if (BINDING STREQUAL "MRI")
+if (BINDING STREQUAL "MRI18")
 	set(MRIVERSION "1.8" CACHE STRING "Version of MRI to link with")
+	pkg_check_modules(MRI REQUIRED ruby-${MRIVERSION})
+	list(APPEND DEFINES
+		BINDING_MRI18
+	)
+	set(BINDING_HEADERS
+		binding-mri18/binding-util.h
+		binding-mri18/binding-types.h
+		binding-mri18/serializable-binding.h
+		binding-mri18/disposable-binding.h
+		binding-mri18/sceneelement-binding.h
+		binding-mri18/viewportelement-binding.h
+		binding-mri18/flashable-binding.h
+	)
+	set(BINDING_SOURCE
+		binding-mri18/binding-mri.cpp
+		binding-mri18/binding-util.cpp
+		binding-mri18/table-binding.cpp
+		binding-mri18/etc-binding.cpp
+		binding-mri18/bitmap-binding.cpp
+		binding-mri18/font-binding.cpp
+		binding-mri18/graphics-binding.cpp
+		binding-mri18/input-binding.cpp
+		binding-mri18/sprite-binding.cpp
+		binding-mri18/viewport-binding.cpp
+		binding-mri18/plane-binding.cpp
+		binding-mri18/window-binding.cpp
+		binding-mri18/tilemap-binding.cpp
+		binding-mri18/audio-binding.cpp
+		binding-mri18/module_rpg.cpp
+		binding-mri18/filesystem-binding.cpp
+		binding-mri18/windowvx-binding.cpp
+		binding-mri18/tilemapvx-binding.cpp
+	)
+elseif (BINDING STREQUAL "MRI")
+	set(MRIVERSION "2.0" CACHE STRING "Version of MRI to link with")
 	pkg_check_modules(MRI REQUIRED ruby-${MRIVERSION})
 	list(APPEND DEFINES
 		BINDING_MRI

@@ -50,7 +50,7 @@ static void parseArgsTableSizes(int argc, VALUE *argv, int *x, int *y, int *z)
 	}
 }
 
-DEF_ALLOCFUNC(Table);
+DEF_TYPE(Table);
 
 RB_METHOD(tableInitialize)
 {
@@ -162,7 +162,7 @@ void
 tableBindingInit()
 {
 	VALUE klass = rb_define_class("Table", rb_cObject);
-	rb_define_alloc_func(klass, TableAllocate);
+	rb_define_alloc_func(klass, classAllocate<&TableType>);
 
 	serializableBindingInit<Table>(klass);
 

@@ -24,18 +24,17 @@
 
 #include "binding-util.h"
 
-#define TableType "Table"
-#define RectType "Rect"
-#define ColorType "Color"
-#define ToneType "Tone"
-#define FontType "Font"
+DECL_TYPE(Table);
+DECL_TYPE(Rect);
+DECL_TYPE(Color);
+DECL_TYPE(Tone);
+DECL_TYPE(Font);
 
-#define BitmapType "Bitmap"
-#define SpriteType "Sprite"
-#define PlaneType "Plane"
-#define ViewportType "Viewport"
-#define TilemapType "Tilemap"
-#define WindowType "Window"
-
+DECL_TYPE(Bitmap);
+DECL_TYPE(Sprite);
+DECL_TYPE(Plane);
+DECL_TYPE(Viewport);
+DECL_TYPE(Tilemap);
+DECL_TYPE(Window);
 
 #endif // BINDINGTYPES_H

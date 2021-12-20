@@ -28,8 +28,7 @@
 #include "binding-util.h"
 #include "binding-types.h"
 
-#define TilemapAutotilesType "TilemapAutotiles"
-
+DEF_TYPE_CUSTOMFREE(TilemapAutotiles, RUBY_TYPED_NEVER_FREE);
 
 RB_METHOD(tilemapAutotilesSet)
 {
@@ -63,7 +62,7 @@ RB_METHOD(tilemapAutotilesGet)
 	return rb_ary_entry(ary, i);
 }
 
-DEF_ALLOCFUNC(Tilemap);
+DEF_TYPE(Tilemap);
 
 RB_METHOD(tilemapInitialize)
 {
@@ -145,18 +144,13 @@ void
 tilemapBindingInit()
 {
 	VALUE klass = rb_define_class("TilemapAutotiles", rb_cObject);
-	_rb_define_method(klass, "[]=", tilemapAutotilesSet);
-	_rb_define_method(klass, "[]", tilemapAutotilesGet);
-
-	klass = rb_define_class("Tilemap", rb_cObject);
+	rb_define_alloc_func(klass, classAllocate<&TilemapAutotilesType>);
 
 	_rb_define_method(klass, "[]=", tilemapAutotilesSet);
 	_rb_define_method(klass, "[]", tilemapAutotilesGet);
 
 	klass = rb_define_class("Tilemap", rb_cObject);
-
-	rb_define_alloc_func(klass, TilemapAllocate);
-
+	rb_define_alloc_func(klass, classAllocate<&TilemapType>);
 
 	disposableBindingInit<Tilemap>(klass);
 
