@@ -1,1 +1,0 @@
-/usr/local/vitasdk/bin/arm-vita-eabi-gcc  -Wl,-q -Wl,-q -Wall -O3 -std=gnu99  -Wl,-z,nocopyreloc -nostdlib CMakeFiles/gpu_fix.dir/fix_gpu.c.obj  -o gpu_fix   -L/home/silica/mkxp-vita/fixgpu/src/build  -lk -lSceGpuEs4ForDriver_stub -lSceDebugForDriver_stub -lSceSysmemForDriver_stub -lSceThreadmgrForDriver_stub -ltaihenForKernel_stub -nostdlib -lgcc 
