@@ -1,4 +1,4 @@
-fixgpu:
+gpu_fix:
   attributes: 0
   version:
     major: 1

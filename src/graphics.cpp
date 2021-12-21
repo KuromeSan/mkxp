@@ -692,6 +692,16 @@ void Graphics::update()
 	p->redrawScreen();
 }
 
+#ifdef __vita__
+void Graphics::unfreeze()
+{
+	p->frozen = false;
+
+	p->checkShutDownReset();
+	p->checkResize();
+}
+#endif
+
 void Graphics::freeze()
 {
 	p->frozen = true;
@@ -1025,14 +1035,17 @@ void Graphics::repaintWait(const AtomicFlag &exitCond, bool checkReset)
 {
 	if (exitCond)
 		return;
-
 	/* Repaint the screen with the last good frame we drew */
 	TEXFBO &lastFrame = p->screen.getPP().frontBuffer();
 	GLMeta::blitBeginScreen(p->winSize);
 	GLMeta::blitSource(lastFrame);
 
 	while (!exitCond)
-	{
+	{	
+#ifdef __vita__
+		if(p->frozen)
+			continue;
+#endif
 		shState->checkShutdown();
 
 		if (checkReset)

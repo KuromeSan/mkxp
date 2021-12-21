@@ -23,6 +23,7 @@
 #ifdef __vita__
 #include <psp2/ctrl.h>
 #include <psp2/kernel/processmgr.h>
+#include "vita/blit.h"
 #endif
 #include <SDL_events.h>
 #include <SDL_joystick.h>
@@ -102,10 +103,14 @@ bool EventThread::allocUserEvents()
 
 	return true;
 }
-
 EventThread::EventThread()
+#ifdef __vita__
+    : fullscreen(true),
+      showCursor(true)
+#else
     : fullscreen(false),
       showCursor(false)
+#endif
 {}
 
 
@@ -412,11 +417,47 @@ void EventThread::process(RGSSThreadData &rtData)
 				break;
 
 			case REQUEST_MESSAGEBOX :
+#ifdef __vita__
+				// a "simple" Software-Rendered "message box" ..
+				
+				shState->graphics().freeze();
+				Debug() << std::string((const char*)event.user.data1);
+				
+				SceCtrlData pad;
+				memset(&pad, 0, sizeof(pad));
+				
+				sceKernelDelayThread(100000);			
+			      	blit_setup();
+				blit_clear(0x00FF0000);
+				blit_set_color(0x00FF0000, 0x00FFFFFF);
+				while(1){	
+
+					blit_string_ctr(20, rtData.config.windowTitle.c_str());
+					blit_string(0,50, (const char*)event.user.data1);
+					blit_string_ctr(500, "X: Continue / O: Quit");
+					
+					sceCtrlPeekBufferPositive(0, &pad, 1);
+					if(pad.buttons == SCE_CTRL_CROSS){		
+						sceKernelDelayThread(150000);
+						break;
+					}
+					if(pad.buttons == SCE_CTRL_CIRCLE){
+						sceKernelExitProcess(0);
+						while(1){
+							sceKernelDelayThread(0x10000);
+						}
+					}
+				}
+				shState->graphics().unfreeze();
+				free(event.user.data1);
+				msgBoxDone.set();
+#else
 				SDL_ShowSimpleMessageBox(event.user.code,
 				                         rtData.config.windowTitle.c_str(),
 				                         (const char*) event.user.data1, win);
 				free(event.user.data1);
 				msgBoxDone.set();
+#endif
 				break;
 
 			case REQUEST_SETCURSORVISIBLE :
@@ -544,6 +585,9 @@ void EventThread::resetInputStates()
 
 void EventThread::setFullscreen(SDL_Window *win, bool mode)
 {
+#ifdef __vita__
+	mode = true;
+#endif
 	SDL_SetWindowFullscreen
 	        (win, mode ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 	fullscreen = mode;
@@ -564,9 +608,9 @@ void EventThread::updateCursorState(bool inWindow,
 void EventThread::requestTerminate()
 {
 #ifdef __vita__
-	Debug() << "EventThread Termination Requested ...";
-	sceKernelExitProcess(0);
-	while(1){sceKernelDelayThread(10000);};
+	sceKernelDelayThread(0x10000);
+	sceKernelExitProcess(0x0);
+	while(1){ sceKernelDelayThread(0x10000); };
 #endif
 	SDL_Event event;
 	event.type = SDL_QUIT;

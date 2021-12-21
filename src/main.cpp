@@ -61,6 +61,7 @@ extern "C"{
 #include <stdlib.h>
 #include <string.h>
 
+#include "vita/blit.h"
 #include "vita/fios2.h" // vitasdk headers are broken for userland fios2.. so uh use mine!
 
 
@@ -73,9 +74,13 @@ unsigned int sceLibcHeapExtendedAlloc = 1;
 static void
 rgssThreadError(RGSSThreadData *rtData, const std::string &msg)
 {
+#ifdef __vita__
+	rtData->ethread->showMessageBox(msg.c_str(), 0x1000);
+#else
 	rtData->rgssErrorMsg = msg;
 	rtData->ethread->requestTerminate();
 	rtData->rqTermAck.set();
+#endif
 }
 
 static inline const char*
@@ -226,8 +231,9 @@ int main(int argc, char *argv[])
         scePowerSetBusClockFrequency(222);
 	scePowerSetGpuClockFrequency(222);
         scePowerSetGpuXbarClockFrequency(166);
-        
-	        
+
+      	blit_setup();
+
         int ret = 0;
         // Load Kernel Module
 	char titleid[12];        

@@ -76,11 +76,9 @@ public:
 	static JoyState joyState;
 	static MouseState mouseState;
 	static TouchState touchState;
-
 	static bool allocUserEvents();
 
 	EventThread();
-
 	void process(RGSSThreadData &rtData);
 	void cleanup();
 

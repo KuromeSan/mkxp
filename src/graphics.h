@@ -35,6 +35,9 @@ class Graphics
 {
 public:
 	void update();
+	#ifdef __vita__
+	void unfreeze();
+	#endif
 	void freeze();
 	void transition(int duration = 8,
 	                const char *filename = "",
