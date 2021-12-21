@@ -19,6 +19,7 @@
 ** along with mkxp.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
 #include "filesystem.h"
 
 #include "rgssad.h"
@@ -464,7 +465,6 @@ void FileSystem::createPathCache()
 	CacheEnumData data(p);
 	data.fileLists.push(&p->fileLists[""]);
 	PHYSFS_enumerate("", cacheEnumCB, &data);
-
 	p->havePathCache = true;
 }
 
@@ -518,6 +518,7 @@ fontSetEnumCB (void *data, const char *dir, const char *fname)
 static PHYSFS_EnumerateCallbackResult
 findFontsFolderCB(void *data, const char *, const char *fname)
 {
+
 	size_t i = 0;
 	char buffer[512];
 	const char *s = fname;
@@ -573,6 +574,7 @@ struct OpenReadEnumData
 static PHYSFS_EnumerateCallbackResult
 openReadEnumCB(void *d, const char *dirpath, const char *filename)
 {
+	
 	OpenReadEnumData &data = *static_cast<OpenReadEnumData*>(d);
 	char buffer[512];
 	const char *fullPath;
@@ -593,7 +595,9 @@ openReadEnumCB(void *d, const char *dirpath, const char *filename)
 		snprintf(buffer, sizeof(buffer), "%s/%s", dirpath, filename);
 		fullPath = buffer;
 	}
+	
 
+	
 	char last = filename[data.filenameN];
 
 	/* If fname matches up to a following '.' (meaning the rest is part
@@ -606,6 +610,7 @@ openReadEnumCB(void *d, const char *dirpath, const char *filename)
 	 * to mixed case path */
 	if (data.pathTrans)
 		fullPath = (*data.pathTrans)[fullPath].c_str();
+
 
 	PHYSFS_File *phys = PHYSFS_openRead(fullPath);
 
@@ -660,9 +665,9 @@ void FileSystem::openRead(OpenHandler &handler, const char *filename)
 		dir = buffer;
 	}
 
-	OpenReadEnumData data(handler, file, len + buffer - delim - !root,
+	OpenReadEnumData* data = new OpenReadEnumData(handler, file, len + buffer - delim - !root,
 	                      p->havePathCache ? &p->pathCache : 0);
-
+	                      
 	if (p->havePathCache)
 	{
 		/* Get the list of files contained in this directory
@@ -670,18 +675,22 @@ void FileSystem::openRead(OpenHandler &handler, const char *filename)
 		const std::vector<std::string> &fileList = p->fileLists[dir];
 
 		for (size_t i = 0; i < fileList.size(); ++i)
-			openReadEnumCB(&data, dir, fileList[i].c_str());
+			openReadEnumCB(data, dir, fileList[i].c_str());
 	}
 	else
 	{
-		PHYSFS_enumerate(dir, openReadEnumCB, &data);
+		PHYSFS_enumerate(dir, openReadEnumCB, data);
 	}
 
-	if (data.physfsError)
-		throw Exception(Exception::PHYSFSError, "PhysFS: %s", data.physfsError);
 
-	if (data.matchCount == 0)
+	if (data->physfsError)
+		throw Exception(Exception::PHYSFSError, "PhysFS: %s", data->physfsError);
+
+	if (data->matchCount == 0)
 		throw Exception(Exception::NoFileError, "%s", filename);
+		
+	if (!p->havePathCache)
+		delete data;
 }
 
 void FileSystem::openReadRaw(SDL_RWops &ops,
@@ -698,3 +707,5 @@ bool FileSystem::exists(const char *filename)
 {
 	return PHYSFS_exists(filename);
 }
+
+

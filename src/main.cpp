@@ -278,6 +278,9 @@ int main(int argc, char *argv[])
         	printf("Failed to create fios2 overlay 0x%x\n", ret);
         	sceKernelExitProcess(0);
         }
+        
+
+        
 #endif
 
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
