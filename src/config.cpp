@@ -187,7 +187,7 @@ void Config::read(int argc, char *argv[])
 	PO_DESC(midi.reverb, bool, false) \
 	PO_DESC(SE.sourceCount, int, 6) \
 	PO_DESC(customScript, std::string, "") \
-	PO_DESC(pathCache, bool, false) \
+	PO_DESC(pathCache, bool, true) \
 	PO_DESC(useScriptNames, bool, false) 
 // Not gonna take your shit boost
 #define GUARD_ALL( exp ) try { exp } catch(...) {}

@@ -3,7 +3,7 @@
 **
 ** This file is part of mkxp.
 **
-** Copyright (C) 2013 Jonas Kulla <Nyocurio@gmail.com>
+** Copyright (C) 2013 - 2021 Amaryllis Kulla <ancurio@mapleshrine.eu>
 **
 ** mkxp is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 #include "viewportelement-binding.h"
 #include "binding-util.h"
 
-DEF_TYPE(Window);
+DEF_ALLOCFUNC(Window);
 
 RB_METHOD(windowInitialize)
 {
@@ -73,7 +73,8 @@ void
 windowBindingInit()
 {
 	VALUE klass = rb_define_class("Window", rb_cObject);
-	rb_define_alloc_func(klass, classAllocate<&WindowType>);
+
+	rb_define_alloc_func(klass, WindowAllocate);
 
 	disposableBindingInit     <Window>(klass);
 	viewportElementBindingInit<Window>(klass);

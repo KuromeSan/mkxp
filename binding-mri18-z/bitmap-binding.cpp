@@ -3,7 +3,7 @@
 **
 ** This file is part of mkxp.
 **
-** Copyright (C) 2013 Jonas Kulla <Nyocurio@gmail.com>
+** Copyright (C) 2013 - 2021 Amaryllis Kulla <ancurio@mapleshrine.eu>
 **
 ** mkxp is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -27,7 +27,8 @@
 #include "binding-util.h"
 #include "binding-types.h"
 
-DEF_TYPE(Bitmap);
+DEF_ALLOCFUNC(Bitmap);
+
 
 static const char *objAsStringPtr(VALUE obj)
 {
@@ -438,7 +439,7 @@ void
 bitmapBindingInit()
 {
 	VALUE klass = rb_define_class("Bitmap", rb_cObject);
-	rb_define_alloc_func(klass, classAllocate<&BitmapType>);
+	rb_define_alloc_func(klass, BitmapAllocate);
 
 	disposableBindingInit<Bitmap>(klass);
 

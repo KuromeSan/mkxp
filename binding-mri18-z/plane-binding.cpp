@@ -3,7 +3,7 @@
 **
 ** This file is part of mkxp.
 **
-** Copyright (C) 2013 Jonas Kulla <Nyocurio@gmail.com>
+** Copyright (C) 2013 - 2021 Amaryllis Kulla <ancurio@mapleshrine.eu>
 **
 ** mkxp is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include "binding-util.h"
 #include "binding-types.h"
 
-DEF_TYPE(Plane);
+DEF_ALLOCFUNC(Plane);
 
 RB_METHOD(planeInitialize)
 {
@@ -58,7 +58,8 @@ void
 planeBindingInit()
 {
 	VALUE klass = rb_define_class("Plane", rb_cObject);
-	rb_define_alloc_func(klass, classAllocate<&PlaneType>);
+
+	rb_define_alloc_func(klass, PlaneAllocate);
 
 	disposableBindingInit<Plane>     (klass);
 	viewportElementBindingInit<Plane>(klass);

@@ -3,7 +3,7 @@
 **
 ** This file is part of mkxp.
 **
-** Copyright (C) 2013 Jonas Kulla <Nyocurio@gmail.com>
+** Copyright (C) 2013 - 2021 Amaryllis Kulla <ancurio@mapleshrine.eu>
 **
 ** mkxp is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ static void parseArgsTableSizes(int argc, VALUE *argv, int *x, int *y, int *z)
 	}
 }
 
-DEF_TYPE(Table);
+DEF_ALLOCFUNC(Table);
 
 RB_METHOD(tableInitialize)
 {
@@ -162,7 +162,7 @@ void
 tableBindingInit()
 {
 	VALUE klass = rb_define_class("Table", rb_cObject);
-	rb_define_alloc_func(klass, classAllocate<&TableType>);
+	rb_define_alloc_func(klass, TableAllocate);
 
 	serializableBindingInit<Table>(klass);
 

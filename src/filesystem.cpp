@@ -495,7 +495,7 @@ fontSetEnumCB (void *data, const char *dir, const char *fname)
 	if (strcmp(lowExt, "ttf") && strcmp(lowExt, "otf"))
 		return PHYSFS_ENUM_OK;
 
-	char filename[512];
+	char filename[1028];
 	snprintf(filename, sizeof(filename), "%s/%s", dir, fname);
 
 	PHYSFS_File *handle = PHYSFS_openRead(filename);
@@ -520,7 +520,7 @@ findFontsFolderCB(void *data, const char *, const char *fname)
 {
 
 	size_t i = 0;
-	char buffer[512];
+	char buffer[1028];
 	const char *s = fname;
 
 	while (*s && i < sizeof(buffer))
@@ -572,19 +572,19 @@ struct OpenReadEnumData
 };
 
 static PHYSFS_EnumerateCallbackResult
-openReadEnumCB(void *d, const char *dirpath, const char *filename)
+openReadEnumCB(OpenReadEnumData *data, const char *dirpath, const char *filename)
 {
-	
-	OpenReadEnumData &data = *static_cast<OpenReadEnumData*>(d);
-	char buffer[512];
+	//OpenReadEnumData &data = *static_cast<OpenReadEnumData*>(d);
+	char buffer[1028];
 	const char *fullPath;
 
-	if (data.stopSearching)
+	if (data->stopSearching)
 		return PHYSFS_ENUM_STOP;
 
 	/* If there's not even a partial match, continue searching */
-	if (strncmp(filename, data.filename, data.filenameN) != 0)
+	if (strncmp(filename, data->filename, data->filenameN) != 0){
 		return PHYSFS_ENUM_OK;
+	}
 
 	if (!*dirpath)
 	{
@@ -598,18 +598,18 @@ openReadEnumCB(void *d, const char *dirpath, const char *filename)
 	
 
 	
-	char last = filename[data.filenameN];
-
+	char last = filename[data->filenameN];
 	/* If fname matches up to a following '.' (meaning the rest is part
 	 * of the extension), or up to a following '\0' (full match), we've
 	 * found our file */
-	if (last != '.' && last != '\0')
-		return PHYSFS_ENUM_STOP;
+	if (last != '.' && last != '\0'){
+		return PHYSFS_ENUM_OK;
+	}
 
 	/* If the path cache is active, translate from lower case
 	 * to mixed case path */
-	if (data.pathTrans)
-		fullPath = (*data.pathTrans)[fullPath].c_str();
+	if (data->pathTrans)
+		fullPath = (*data->pathTrans)[fullPath].c_str();
 
 
 	PHYSFS_File *phys = PHYSFS_openRead(fullPath);
@@ -619,26 +619,26 @@ openReadEnumCB(void *d, const char *dirpath, const char *filename)
 		/* Failing to open this file here means there must
 		 * be a deeper rooted problem somewhere within PhysFS.
 		 * Just abort alltogether. */
-		data.stopSearching = true;
-		data.physfsError = PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode());
+		data->stopSearching = true;
+		data->physfsError = PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode());
 
 		return PHYSFS_ENUM_ERROR;
 	}
 
-	initReadOps(phys, data.ops, false);
+	initReadOps(phys, data->ops, false);
 
 	const char *ext = findExt(filename);
 
-	if (data.handler.tryRead(data.ops, ext))
-		data.stopSearching = true;
+	if (data->handler.tryRead(data->ops, ext))
+		data->stopSearching = true;
 
-	++data.matchCount;
+	++data->matchCount;
 	return PHYSFS_ENUM_OK;
 }
 
 void FileSystem::openRead(OpenHandler &handler, const char *filename)
 {
-	char buffer[512];
+	char buffer[1028];
 	size_t len = strcpySafe(buffer, filename, sizeof(buffer), -1);
 	char *delim;
 
@@ -675,11 +675,12 @@ void FileSystem::openRead(OpenHandler &handler, const char *filename)
 		const std::vector<std::string> &fileList = p->fileLists[dir];
 
 		for (size_t i = 0; i < fileList.size(); ++i)
-			openReadEnumCB(data, dir, fileList[i].c_str());
+			if(openReadEnumCB(data, dir, fileList[i].c_str()) == PHYSFS_ENUM_STOP)
+				break;
 	}
 	else
 	{
-		PHYSFS_enumerate(dir, openReadEnumCB, data);
+		PHYSFS_enumerate(dir, (PHYSFS_EnumerateCallback)openReadEnumCB, data);
 	}
 
 
@@ -689,8 +690,7 @@ void FileSystem::openRead(OpenHandler &handler, const char *filename)
 	if (data->matchCount == 0)
 		throw Exception(Exception::NoFileError, "%s", filename);
 		
-	if (!p->havePathCache)
-		delete data;
+	delete data;
 }
 
 void FileSystem::openReadRaw(SDL_RWops &ops,

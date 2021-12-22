@@ -3,7 +3,7 @@
 **
 ** This file is part of mkxp.
 **
-** Copyright (C) 2013 Jonas Kulla <Nyocurio@gmail.com>
+** Copyright (C) 2013 - 2021 Amaryllis Kulla <ancurio@mapleshrine.eu>
 **
 ** mkxp is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -28,7 +28,8 @@
 #include "binding-util.h"
 #include "binding-types.h"
 
-DEF_TYPE_CUSTOMFREE(TilemapAutotiles, RUBY_TYPED_NEVER_FREE);
+#define TilemapAutotilesType "TilemapAutotiles"
+
 
 RB_METHOD(tilemapAutotilesSet)
 {
@@ -62,7 +63,7 @@ RB_METHOD(tilemapAutotilesGet)
 	return rb_ary_entry(ary, i);
 }
 
-DEF_TYPE(Tilemap);
+DEF_ALLOCFUNC(Tilemap);
 
 RB_METHOD(tilemapInitialize)
 {
@@ -144,13 +145,18 @@ void
 tilemapBindingInit()
 {
 	VALUE klass = rb_define_class("TilemapAutotiles", rb_cObject);
-	rb_define_alloc_func(klass, classAllocate<&TilemapAutotilesType>);
+	_rb_define_method(klass, "[]=", tilemapAutotilesSet);
+	_rb_define_method(klass, "[]", tilemapAutotilesGet);
+
+	klass = rb_define_class("Tilemap", rb_cObject);
 
 	_rb_define_method(klass, "[]=", tilemapAutotilesSet);
 	_rb_define_method(klass, "[]", tilemapAutotilesGet);
 
 	klass = rb_define_class("Tilemap", rb_cObject);
-	rb_define_alloc_func(klass, classAllocate<&TilemapType>);
+
+	rb_define_alloc_func(klass, TilemapAllocate);
+
 
 	disposableBindingInit<Tilemap>(klass);
 

@@ -3,7 +3,7 @@
 **
 ** This file is part of mkxp.
 **
-** Copyright (C) 2013 Jonas Kulla <Nyocurio@gmail.com>
+** Copyright (C) 2013 - 2021 Amaryllis Kulla <ancurio@mapleshrine.eu>
 **
 ** mkxp is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 #include "binding-util.h"
 #include "binding-types.h"
 
-DEF_TYPE(Sprite);
+DEF_ALLOCFUNC(Sprite);
 
 RB_METHOD(spriteInitialize)
 {
@@ -98,7 +98,7 @@ void
 spriteBindingInit()
 {
 	VALUE klass = rb_define_class("Sprite", rb_cObject);
-	rb_define_alloc_func(klass, classAllocate<&SpriteType>);
+	rb_define_alloc_func(klass, SpriteAllocate);
 
 	disposableBindingInit     <Sprite>(klass);
 	flashableBindingInit      <Sprite>(klass);

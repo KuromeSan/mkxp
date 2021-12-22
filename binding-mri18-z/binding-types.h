@@ -1,9 +1,9 @@
 /*
-** serializable-binding.h
+** binding-types.h
 **
 ** This file is part of mkxp.
 **
-** Copyright (C) 2013 Jonas Kulla <Nyocurio@gmail.com>
+** Copyright (C) 2013 - 2021 Amaryllis Kulla <ancurio@mapleshrine.eu>
 **
 ** mkxp is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -19,33 +19,23 @@
 ** along with mkxp.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SERIALIZABLEBINDING_H
-#define SERIALIZABLEBINDING_H
+#ifndef BINDINGTYPES_H
+#define BINDINGTYPES_H
 
-#include "serializable.h"
 #include "binding-util.h"
-#include "exception.h"
 
-template<class C>
-static VALUE
-serializableDump(int, VALUE *, VALUE self)
-{
-	Serializable *s = getPrivateData<C>(self);
+#define TableType "Table"
+#define RectType "Rect"
+#define ColorType "Color"
+#define ToneType "Tone"
+#define FontType "Font"
 
-	int dataSize = s->serialSize();
+#define BitmapType "Bitmap"
+#define SpriteType "Sprite"
+#define PlaneType "Plane"
+#define ViewportType "Viewport"
+#define TilemapType "Tilemap"
+#define WindowType "Window"
 
-	VALUE data = rb_str_new(0, dataSize);
 
-	GUARD_EXC( s->serialize(RSTRING_PTR(data)); );
-
-	return data;
-}
-
-template<class C>
-void
-serializableBindingInit(VALUE klass)
-{
-	_rb_define_method(klass, "_dump", serializableDump<C>);
-}
-
-#endif // SERIALIZABLEBINDING_H
+#endif // BINDINGTYPES_H

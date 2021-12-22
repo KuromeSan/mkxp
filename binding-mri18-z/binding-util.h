@@ -3,7 +3,7 @@
 **
 ** This file is part of mkxp.
 **
-** Copyright (C) 2013 Jonas Kulla <Nyocurio@gmail.com>
+** Copyright (C) 2013 - 2021 Amaryllis Kulla <ancurio@mapleshrine.eu>
 **
 ** mkxp is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -22,131 +22,9 @@
 #ifndef BINDING_UTIL_H
 #define BINDING_UTIL_H
 
-#include <ruby.h>
-#include <ruby/version.h>
+#include <ruby/ruby.h>
 
 #include "exception.h"
-
-// Ruby 1.8 and Ruby 1.9+ use different version macros
-#ifndef RUBY_API_VERSION_MAJOR
-#define RUBY_API_VERSION_MAJOR RUBY_VERSION_MAJOR
-#endif
-
-#ifndef RUBY_API_VERSION_MINOR
-#define RUBY_API_VERSION_MINOR RUBY_VERSION_MINOR
-#endif
-
-#if RUBY_API_VERSION_MAJOR == 1
-#define PRIsVALUE "s"
-#define RB_OBJ_CLASSNAME(obj) rb_obj_classname(obj)
-#define RB_OBJ_STRING(obj) StringValueCStr(obj)
-
-NORETURN(void rb_error_arity(int, int, int));
-
-#define OBJ_INIT_COPY(obj, orig) \
-	((obj) != (orig) && (rb_obj_init_copy((obj), (orig)), 1))
-#if RUBY_API_VERSION_MINOR == 8
-// Makes version checks easier
-#define RUBY_LEGACY_VERSION
-// Functions and macros providing Ruby 1.8 compatibililty
-#define FLONUM_P(x) 0
-
-#define RB_FLOAT_TYPE_P(obj) (FLONUM_P(obj) || (!SPECIAL_CONST_P(obj) && BUILTIN_TYPE(obj) == T_FLOAT))
-
-#define RB_TYPE_P(obj, type) ( \
-	((type) == T_FIXNUM) ? FIXNUM_P(obj) : \
-	((type) == T_TRUE) ? ((obj) == Qtrue) : \
-	((type) == T_FALSE) ? ((obj) == Qfalse) : \
-	((type) == T_NIL) ? ((obj) == Qnil) : \
-	((type) == T_UNDEF) ? ((obj) == Qundef) : \
-	((type) == T_SYMBOL) ? SYMBOL_P(obj) : \
-	((type) == T_FLOAT) ? RB_FLOAT_TYPE_P(obj) : \
-	(!SPECIAL_CONST_P(obj) && BUILTIN_TYPE(obj) == (type)))
-
-#define RUBY_T_ARRAY T_ARRAY
-#define RUBY_T_STRING T_STRING
-#define RUBY_T_FLOAT T_FLOAT
-#define RUBY_T_FIXNUM T_FIXNUM
-#define RUBY_T_TRUE T_TRUE
-#define RUBY_T_FALSE T_FALSE
-#define RUBY_T_NIL T_NIL
-
-#define rb_str_new_cstr rb_str_new2
-
-#define RUBY_DEFAULT_FREE ((RUBY_DATA_FUNC)-1)
-#define RUBY_NEVER_FREE   ((RUBY_DATA_FUNC)0)
-#define RUBY_TYPED_DEFAULT_FREE RUBY_DEFAULT_FREE
-#define RUBY_TYPED_NEVER_FREE   RUBY_NEVER_FREE
-
-#define RTYPEDDATA_DATA DATA_PTR
-
-#define RFLOAT_VALUE(d) RFLOAT(d)->value
-
-#define ENCODING_INLINE_MAX 127
-#define ENCODING_SHIFT (FL_USHIFT+10)
-#define ENCODING_MASK (((VALUE)ENCODING_INLINE_MAX)<<ENCODING_SHIFT) /* FL_USER10|FL_USER11|FL_USER12|FL_USER13|FL_USER14|FL_USER15|FL_USER16 */
-
-#define ENCODING_SET_INLINED(obj,i) do {\
-	RBASIC(obj)->flags &= ~ENCODING_MASK;\
-	RBASIC(obj)->flags |= (VALUE)(i) << ENCODING_SHIFT;\
-} while (0)
-#define ENCODING_SET(obj,i) rb_enc_set_index((obj), (i))
-
-#define ENCODING_GET_INLINED(obj) (int)((RBASIC(obj)->flags & ENCODING_MASK)>>ENCODING_SHIFT)
-#define ENCODING_GET(obj) \
-	(ENCODING_GET_INLINED(obj) != ENCODING_INLINE_MAX ? \
-	ENCODING_GET_INLINED(obj) : \
-	rb_enc_get_index(obj))
-
-#define ENCODING_IS_ASCII8BIT(obj) (ENCODING_GET_INLINED(obj) == 0)
-
-typedef struct {
-	const char *wrap_struct_name;
-	struct {
-		void (*dmark)(void*);
-		void (*dfree)(void*);
-		size_t (*dsize)(const void *);
-		void *reserved[2];
-	} function;
-	const char *parent;
-	void *data;
-	VALUE flags;
-} rb_data_type_t;
-
-VALUE rb_sprintf(const char* fmt, ...);
-
-VALUE rb_data_typed_object_alloc(VALUE klass, void *datap, const rb_data_type_t *);
-
-void *rb_check_typeddata(VALUE, const rb_data_type_t *);
-
-#define Check_TypedStruct(v,t) rb_check_typeddata((VALUE)(v),(t))
-
-typedef void rb_encoding;
-
-VALUE rb_enc_str_new(const char*, long, rb_encoding*);
-
-rb_encoding *rb_utf8_encoding(void);
-
-void rb_enc_set_default_external(VALUE encoding);
-
-VALUE rb_enc_from_encoding(rb_encoding *enc);
-
-VALUE rb_str_catf(VALUE, const char*, ...);
-
-VALUE rb_errinfo(void);
-
-int rb_typeddata_is_kind_of(VALUE, const rb_data_type_t *);
-
-VALUE rb_file_open_str(VALUE, const char*);
-
-VALUE rb_enc_associate_index(VALUE, int);
-
-int rb_utf8_encindex(void);
-
-VALUE rb_hash_lookup2(VALUE, VALUE, VALUE);
-
-#endif // RUBY_API_VERSION_MINOR == 8
-#endif // RUBY_API_VERSION_MAJOR == 1
 
 enum RbException
 {
@@ -183,41 +61,63 @@ struct Exception;
 
 void
 raiseRbExc(const Exception &exc);
-
-#define DECL_TYPE(Klass) \
-	extern rb_data_type_t Klass##Type
+#define RSTRING_PTR(s) (*(char *const *)&RSTRING(s)->ptr)
+#define RSTRING_LEN(s) (*(const long *)&RSTRING(s)->len)
+#define RARRAY_LEN(s) (*(const long *)&RARRAY(s)->len)
 
 /* 2.1 has added a new field (flags) to rb_data_type_t */
-#if RUBY_API_VERSION_MAJOR > 1 && RUBY_API_VERSION_MINOR > 0
+#include <ruby/version.h>
+#if RUBY_API_VERSION_MAJOR >= 2 && RUBY_API_VERSION_MINOR >= 1
 /* TODO: can mkxp use RUBY_TYPED_FREE_IMMEDIATELY here? */
 #define DEF_TYPE_FLAGS 0
 #else
 #define DEF_TYPE_FLAGS
 #endif
 
-#define DEF_TYPE_CUSTOMNAME_AND_FREE(Klass, Name, Free) \
-	rb_data_type_t Klass##Type = { \
-		Name, { 0, Free, 0, { 0, 0 } }, 0, 0, DEF_TYPE_FLAGS \
-	}
 
-#define DEF_TYPE_CUSTOMFREE(Klass, Free) \
-	DEF_TYPE_CUSTOMNAME_AND_FREE(Klass, #Klass, Free)
+#define RUBY_T_FIXNUM T_FIXNUM
+#define RUBY_T_TRUE T_TRUE
+#define RUBY_T_FALSE T_FALSE
+#define RUBY_T_NIL T_NIL
+#define RUBY_T_UNDEF T_UNDEF
+#define RUBY_T_SYMBOL T_SYMBOL
+#define RUBY_T_FLOAT T_FLOAT
+#define RUBY_T_STRING T_STRING
+#define RUBY_T_ARRAY T_ARRAY
 
-#define DEF_TYPE_CUSTOMNAME(Klass, Name) \
-	DEF_TYPE_CUSTOMNAME_AND_FREE(Klass, Name, freeInstance<Klass>)
+#define RUBY_Qtrue Qtrue
+#define RUBY_Qfalse Qfalse
+#define RUBY_Qnil Qnil
+#define RUBY_Qundef Qundef
 
-#define DEF_TYPE(Klass) DEF_TYPE_CUSTOMNAME(Klass, #Klass)
+#define RB_FIXNUM_P(obj) FIXNUM_P(obj)
+#define RB_SYMBOL_P(obj) SYMBOL_P(obj)
 
-template<rb_data_type_t *rbType>
-static VALUE classAllocate(VALUE klass)
-{
-/* 2.3 has changed the name of this function */
-#if RUBY_API_VERSION_MAJOR >= 2 && RUBY_API_VERSION_MINOR >= 3
-	return rb_data_typed_object_wrap(klass, 0, rbType);
-#else
-	return rb_data_typed_object_alloc(klass, 0, rbType);
-#endif
+#define RFLOAT_VALUE(obj) RFLOAT(obj)->value
+
+#define RB_TYPE_P(obj, type) ( \
+((type) == RUBY_T_FIXNUM) ? RB_FIXNUM_P(obj) : \
+((type) == RUBY_T_TRUE) ? ((obj) == RUBY_Qtrue) : \
+((type) == RUBY_T_FALSE) ? ((obj) == RUBY_Qfalse) : \
+((type) == RUBY_T_NIL) ? ((obj) == RUBY_Qnil) : \
+((type) == RUBY_T_UNDEF) ? ((obj) == RUBY_Qundef) : \
+((type) == RUBY_T_SYMBOL) ? RB_SYMBOL_P(obj) : \
+(!SPECIAL_CONST_P(obj) && BUILTIN_TYPE(obj) == (type)))
+
+#define OBJ_INIT_COPY(a,b) rb_obj_init_copy(a,b)
+
+#define DEF_ALLOCFUNC_CUSTOMFREE(type,free) \
+static VALUE type##Allocate(VALUE klass)\
+{ \
+    void *sval; \
+    return Data_Wrap_Struct(klass, 0, free, sval); \
 }
+
+#define DEF_ALLOCFUNC(type) DEF_ALLOCFUNC_CUSTOMFREE(type, freeInstance<type>)
+
+#define rb_str_new_cstr rb_str_new2
+#define PRIsVALUE "s"
+
 
 template<class C>
 static void freeInstance(void *inst)
@@ -232,30 +132,35 @@ template<class C>
 inline C *
 getPrivateData(VALUE self)
 {
-	C *c = static_cast<C*>(RTYPEDDATA_DATA(self));
+	C *c = static_cast<C*>(DATA_PTR(self));
 
 	return c;
 }
 
 template<class C>
 static inline C *
-getPrivateDataCheck(VALUE self, const rb_data_type_t &type)
+getPrivateDataCheck(VALUE self, const char *type)
 {
-	void *obj = Check_TypedStruct(self, &type);
+	rb_check_type(self, T_DATA);
+	const char *ownname = rb_obj_classname(self);
+	if (strcmp(ownname, type))
+	rb_raise(rb_eTypeError, "Type mismatch between %s and %s", ownname, type);
+
+	void *obj = DATA_PTR(self);
+
 	return static_cast<C*>(obj);
 }
 
 static inline void
 setPrivateData(VALUE self, void *p)
 {
-	RTYPEDDATA_DATA(self) = p;
+	DATA_PTR(self) = p;
 }
 
 inline VALUE
-wrapObject(void *p, const rb_data_type_t &type,
-           VALUE underKlass = rb_cObject)
+wrapObject(void *p, const char *type, VALUE underKlass = rb_cObject)
 {
-	VALUE klass = rb_const_get(underKlass, rb_intern(type.wrap_struct_name));
+	VALUE klass = rb_const_get(underKlass, rb_intern(type));
 	VALUE obj = rb_obj_alloc(klass);
 
 	setPrivateData(obj, p);
@@ -265,7 +170,7 @@ wrapObject(void *p, const rb_data_type_t &type,
 
 inline VALUE
 wrapProperty(VALUE self, void *prop, const char *iv,
-             const rb_data_type_t &type,
+             const char *type,
              VALUE underKlass = rb_cObject)
 {
 	VALUE propObj = wrapObject(prop, type, underKlass);
@@ -399,6 +304,32 @@ rb_check_argc(int actual, int expected)
 		         actual, expected);
 }
 
+static inline void
+rb_error_arity(int argc, int min, int max)
+{
+    if (argc > max || argc < min)
+        rb_raise(rb_eArgError, "Finish me! rb_error_arity()"); //TODO
+}
+
+static inline VALUE
+rb_sprintf(const char *fmt, ...)
+{
+    return rb_str_new2("Finish me! rb_sprintf()"); //TODO
+}
+
+static inline VALUE
+rb_str_catf(VALUE obj, const char *fmt, ...)
+{
+    return rb_str_new2("Finish me! rb_str_catf()"); //TODO
+}
+
+static inline VALUE
+rb_file_open_str(VALUE filename, const char *mode)
+{
+    VALUE fileobj = rb_const_get(rb_cObject, rb_intern("File"));
+    return rb_funcall(fileobj, rb_intern("open"), 2, filename, mode);
+}
+
 #define RB_METHOD(name) \
 	static VALUE name(int argc, VALUE *argv, VALUE self)
 
@@ -430,45 +361,45 @@ rb_check_argc(int actual, int expected)
  * because self.disposed? is not checked in this case.
  * Should make this more clear */
 #define DEF_PROP_OBJ_REF(Klass, PropKlass, PropName, prop_iv) \
-	RB_METHOD(Klass##Get##PropName) \
-	{ \
-		RB_UNUSED_PARAM; \
-		return rb_iv_get(self, prop_iv); \
-	} \
-	RB_METHOD(Klass##Set##PropName) \
-	{ \
-		RB_UNUSED_PARAM; \
-		rb_check_argc(argc, 1); \
-		Klass *k = getPrivateData<Klass>(self); \
-		VALUE propObj = *argv; \
-		PropKlass *prop; \
-		if (NIL_P(propObj)) \
-			prop = 0; \
-		else \
-			prop = getPrivateDataCheck<PropKlass>(propObj, PropKlass##Type); \
-		GUARD_EXC( k->set##PropName(prop); ) \
-		rb_iv_set(self, prop_iv, propObj); \
-		return propObj; \
-	}
+    RB_METHOD(Klass##Get##PropName) \
+    { \
+	RB_UNUSED_PARAM; \
+	return rb_iv_get(self, prop_iv); \
+    } \
+    RB_METHOD(Klass##Set##PropName) \
+    { \
+	RB_UNUSED_PARAM; \
+	rb_check_argc(argc, 1); \
+	Klass *k = getPrivateData<Klass>(self); \
+	VALUE propObj = *argv; \
+	PropKlass *prop; \
+	if (NIL_P(propObj)) \
+	    prop = 0; \
+	else \
+prop = getPrivateDataCheck<PropKlass>(propObj, #PropKlass); \
+	GUARD_EXC( k->set##PropName(prop); ) \
+	rb_iv_set(self, prop_iv, propObj); \
+	return propObj; \
+    }
 
 /* Object property which is copied by value, not reference */
 #define DEF_PROP_OBJ_VAL(Klass, PropKlass, PropName, prop_iv) \
-	RB_METHOD(Klass##Get##PropName) \
-	{ \
-		RB_UNUSED_PARAM; \
-		checkDisposed<Klass>(self); \
-		return rb_iv_get(self, prop_iv); \
-	} \
-	RB_METHOD(Klass##Set##PropName) \
-	{ \
-		rb_check_argc(argc, 1); \
-		Klass *k = getPrivateData<Klass>(self); \
-		VALUE propObj = *argv; \
-		PropKlass *prop; \
-		prop = getPrivateDataCheck<PropKlass>(propObj, PropKlass##Type); \
-		GUARD_EXC( k->set##PropName(*prop); ) \
-		return propObj; \
-	}
+    RB_METHOD(Klass##Get##PropName) \
+    { \
+        RB_UNUSED_PARAM; \
+        checkDisposed<Klass>(self); \
+        return rb_iv_get(self, prop_iv); \
+    } \
+    RB_METHOD(Klass##Set##PropName) \
+    { \
+        rb_check_argc(argc, 1); \
+        Klass *k = getPrivateData<Klass>(self); \
+        VALUE propObj = *argv; \
+        PropKlass *prop; \
+        prop = getPrivateDataCheck<PropKlass>(propObj, #PropKlass); \
+        GUARD_EXC( k->set##PropName(*prop); ) \
+        return propObj; \
+    }
 
 #define DEF_PROP(Klass, type, PropName, arg_fun, value_fun) \
 	RB_METHOD(Klass##Get##PropName) \
@@ -503,5 +434,6 @@ rb_check_argc(int actual, int expected)
 	_rb_define_method(klass, prop_name_s, Klass##Get##PropName); \
 	_rb_define_method(klass, prop_name_s "=", Klass##Set##PropName); \
 }
+
 
 #endif // BINDING_UTIL_H

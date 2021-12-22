@@ -3,7 +3,7 @@
 **
 ** This file is part of mkxp.
 **
-** Copyright (C) 2014 Jonas Kulla <Nyocurio@gmail.com>
+** Copyright (C) 2014 - 2021 Amaryllis Kulla <ancurio@mapleshrine.eu>
 **
 ** mkxp is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -29,9 +29,8 @@
 #include "binding-util.h"
 #include "binding-types.h"
 
-DEF_TYPE_CUSTOMNAME(TilemapVX, "Tilemap");
-
-DEF_TYPE_CUSTOMFREE(BitmapArray, RUBY_TYPED_NEVER_FREE);
+DEF_ALLOCFUNC(TilemapVX);
+#define BitmapArrayType "BitmapArray"
 
 RB_METHOD(tilemapVXInitialize)
 {
@@ -137,7 +136,8 @@ void
 tilemapVXBindingInit()
 {
 	VALUE klass = rb_define_class("Tilemap", rb_cObject);
-	rb_define_alloc_func(klass, classAllocate<&TilemapVXType>);
+
+	rb_define_alloc_func(klass, TilemapVXAllocate);
 
 	disposableBindingInit<TilemapVX>(klass);
 
@@ -162,7 +162,6 @@ tilemapVXBindingInit()
 	}
 
 	klass = rb_define_class_under(klass, "BitmapArray", rb_cObject);
-	rb_define_alloc_func(klass, classAllocate<&BitmapArrayType>);
 
 	_rb_define_method(klass, "[]=", tilemapVXBitmapsSet);
 	_rb_define_method(klass, "[]", tilemapVXBitmapsGet);

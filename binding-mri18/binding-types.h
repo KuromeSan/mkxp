@@ -3,7 +3,7 @@
 **
 ** This file is part of mkxp.
 **
-** Copyright (C) 2013 - 2021 Amaryllis Kulla <ancurio@mapleshrine.eu>
+** Copyright (C) 2013 Jonas Kulla <Nyocurio@gmail.com>
 **
 ** mkxp is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -24,18 +24,17 @@
 
 #include "binding-util.h"
 
-#define TableType "Table"
-#define RectType "Rect"
-#define ColorType "Color"
-#define ToneType "Tone"
-#define FontType "Font"
+DECL_TYPE(Table);
+DECL_TYPE(Rect);
+DECL_TYPE(Color);
+DECL_TYPE(Tone);
+DECL_TYPE(Font);
 
-#define BitmapType "Bitmap"
-#define SpriteType "Sprite"
-#define PlaneType "Plane"
-#define ViewportType "Viewport"
-#define TilemapType "Tilemap"
-#define WindowType "Window"
-
+DECL_TYPE(Bitmap);
+DECL_TYPE(Sprite);
+DECL_TYPE(Plane);
+DECL_TYPE(Viewport);
+DECL_TYPE(Tilemap);
+DECL_TYPE(Window);
 
 #endif // BINDINGTYPES_H

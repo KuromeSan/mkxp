@@ -3,7 +3,7 @@
 **
 ** This file is part of mkxp.
 **
-** Copyright (C) 2013 Jonas Kulla <Nyocurio@gmail.com>
+** Copyright (C) 2013 - 2021 Amaryllis Kulla <ancurio@mapleshrine.eu>
 **
 ** mkxp is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -47,7 +47,12 @@ static int getButtonArg(int argc, VALUE *argv)
 	else if (SYMBOL_P(argv[0]) && rgssVer >= 3)
 	{
 		VALUE symHash = getRbData()->buttoncodeHash;
-		num = FIX2INT(rb_hash_lookup2(symHash, argv[0], INT2FIX(Input::None)));
+		VALUE res = rb_hash_aref(symHash, argv[0]);
+		if (!NIL_P(res))
+		    num = FIX2INT(res);
+		else
+		    num = Input::None;
+
 	}
 	else
 	{
