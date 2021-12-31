@@ -105,19 +105,32 @@ int blit_string(int sx,int sy,const char *msg)
 //Kprintf("MODE %d WIDTH %d\n",pixelformat,bufferwidth);
     if( (bufferwidth==0) || (pixelformat!=0)) return -1;
 
+    int i = 0;
     int buff = 0;
 	for(x=0; ; x++)
 	{
+		i++;
+		// End
 		if(msg[x] == '\0'){
 		    break;
 		}
+		// /r/n not allowed!
 		if(msg[x] == '\r'){
+		    i--;
 		    continue;
 		}
+		// Newline
 		if(msg[x] == '\n'){
 		    sy += 16;
 		    buff = 0;
+		    i = 0;
 		    continue;
+		}
+		// Word Wrap
+		if(i > 60){
+		    sy += 16;
+		    buff = 0;
+		    i = 0;
 		}
 		code = msg[x] & 0x7f; // 7bit ANK
 		for(y=0;y<8;y++)

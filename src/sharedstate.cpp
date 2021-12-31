@@ -70,7 +70,7 @@ struct SharedStatePrivate
 	EventThread &eThread;
 	RGSSThreadData &rtData;
 	Config &config;
-
+	
 	SharedMidiState midiState;
 
 	Graphics graphics;
@@ -95,7 +95,7 @@ struct SharedStatePrivate
 	TEXFBO atlasTex;
 
 	Quad gpQuad;
-
+	
 	unsigned int stampCounter;
 
 	SharedStatePrivate(RGSSThreadData *threadData)
@@ -126,7 +126,7 @@ struct SharedStatePrivate
 			fileSystem.addPath(archPath.c_str());
 			fclose(tmp);
 		}
-
+		
 #ifdef __vita__		
 		fileSystem.addPath("app0:/");
 		if(rgssVer == 1)

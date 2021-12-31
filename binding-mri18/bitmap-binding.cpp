@@ -250,6 +250,7 @@ RB_METHOD(bitmapHueChange)
 RB_METHOD(bitmapDrawText)
 {
 	Bitmap *b = getPrivateData<Bitmap>(self);
+	//return self;
 
 	const char *str;
 	int align = Bitmap::Left;

@@ -28,6 +28,8 @@
 namespace GLMeta
 {
 
+GLenum err;
+
 void subRectImageUpload(GLint srcW, GLint srcX, GLint srcY,
                         GLint dstX, GLint dstY, GLsizei dstW, GLsizei dstH,
                         SDL_Surface *src, GLenum format)
@@ -53,6 +55,11 @@ void subRectImageUpload(GLint srcW, GLint srcX, GLint srcY,
 
 		SDL_FreeSurface(tmp);
 	}
+	
+	while((err = gl.GetError()) != GL_NO_ERROR)
+	{
+		printf("GLMeta::subRectImageUpload -> glGetError: %x\n", err);
+	}
 }
 
 void subRectImageEnd()
@@ -62,6 +69,11 @@ void subRectImageEnd()
 		gl.PixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 		gl.PixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
 		gl.PixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+	}
+	
+	while((err = gl.GetError()) != GL_NO_ERROR)
+	{
+		printf("GLMeta::subRectImageEnd -> glGetError: %x\n", err);
 	}
 }
 
@@ -78,6 +90,13 @@ static void vaoBindRes(VAO &vao)
 
 		gl.EnableVertexAttribArray(va.index);
 		gl.VertexAttribPointer(va.index, va.size, va.type, GL_FALSE, vao.vertSize, va.offset);
+	
+		GLenum err = GL_NO_ERROR;
+
+	}
+	while((err = gl.GetError()) != GL_NO_ERROR)
+	{
+		printf("GLMeta::vaoBindRes -> glGetError: %x\n", err);
 	}
 }
 
@@ -99,12 +118,24 @@ void vaoInit(VAO &vao, bool keepBound)
 			IBO::bind(vao.ibo);
 		}
 	}
+
+	while((err = gl.GetError()) != GL_NO_ERROR)
+	{
+	    printf("GLMeta::vaoInit -> glGetError: %x\n", err);
+	}
+
 }
 
 void vaoFini(VAO &vao)
 {
 	if (HAVE_NATIVE_VAO)
 		gl.DeleteVertexArrays(1, &vao.nativeVAO);
+
+	while((err = gl.GetError()) != GL_NO_ERROR)
+	{
+	    printf("GLMeta::vaoFini -> glGetError: %x\n", err);
+	}
+
 }
 
 void vaoBind(VAO &vao)
@@ -113,6 +144,12 @@ void vaoBind(VAO &vao)
 		gl.BindVertexArray(vao.nativeVAO);
 	else
 		vaoBindRes(vao);
+
+	while((err = gl.GetError()) != GL_NO_ERROR)
+	{
+	    printf("GLMeta::vaoBind -> glGetError: %x\n", err);
+	}
+
 }
 
 void vaoUnbind(VAO &vao)
@@ -129,6 +166,12 @@ void vaoUnbind(VAO &vao)
 		VBO::unbind();
 		IBO::unbind();
 	}
+
+	while((err = gl.GetError()) != GL_NO_ERROR)
+	{
+	    printf("GLMeta::vaoUnbind -> glGetError: %x\n", err);
+	}
+
 }
 
 #define HAVE_NATIVE_BLIT gl.BlitFramebuffer
@@ -149,6 +192,12 @@ static void _blitBegin(FBO::ID fbo, const Vec2i &size)
 		shader.applyViewportProj();
 		shader.setTranslation(Vec2i());
 	}
+	
+	while((err = gl.GetError()) != GL_NO_ERROR)
+	{
+	    printf("GLMeta::blitBegin -> glGetError: %x\n", err);
+	}
+
 }
 
 void blitBegin(TEXFBO &target)
@@ -172,6 +221,11 @@ void blitSource(TEXFBO &source)
 		SimpleShader &shader = shState->shaders().simple;
 		shader.setTexSize(Vec2i(source.width, source.height));
 		TEX::bind(source.tex);
+	}
+
+	while((err = gl.GetError()) != GL_NO_ERROR)
+	{
+	    printf("GLMeta::blitSource -> glGetError: %x\n", err);
 	}
 }
 
@@ -202,12 +256,24 @@ void blitRectangle(const IntRect &src, const IntRect &dst, bool smooth)
 		if (smooth)
 			TEX::setSmooth(false);
 	}
+
+	while((err = gl.GetError()) != GL_NO_ERROR)
+	{
+	    printf("GLMeta::blitRectangle -> glGetError: %x\n", err);
+	}
+
 }
 
 void blitEnd()
 {
 	if (!HAVE_NATIVE_BLIT)
 		glState.viewport.pop();
+		
+	while((err = gl.GetError()) != GL_NO_ERROR)
+	{
+	    printf("GLMeta::blitEnd -> glGetError: %x\n", err);
+	}
+
 }
 
 }

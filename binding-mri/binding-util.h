@@ -62,6 +62,8 @@ struct Exception;
 void
 raiseRbExc(const Exception &exc);
 
+
+
 #define DECL_TYPE(Klass) \
 	extern rb_data_type_t Klass##Type
 

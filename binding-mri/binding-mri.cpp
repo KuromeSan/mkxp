@@ -157,6 +157,7 @@ static void mriBindingInit()
 		rb_gv_set("TEST", debug);
 
 	rb_gv_set("BTEST", rb_bool_new(shState->config().editor.battleTest));
+		
 }
 
 static void

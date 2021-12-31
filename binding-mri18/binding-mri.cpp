@@ -159,6 +159,7 @@ static void mriBindingInit()
 		rb_gv_set("TEST", debug);
 
 	rb_gv_set("BTEST", rb_bool_new(shState->config().editor.battleTest));
+	
 }
 
 static void
@@ -589,7 +590,7 @@ static void mriBindingExecute()
 	ruby_sysinit(&argc, &argv);
 	ruby_setup();
 #endif
-
+	
 	rb_enc_set_default_external(rb_enc_from_encoding(rb_utf8_encoding()));
 
 	Config &conf = shState->rtData().config;

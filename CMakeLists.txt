@@ -13,7 +13,8 @@ IF(VITA)
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
-set(CMAKE_TOOLCHAIN_FILE "$ENV{VITASDK}/share/vita.toolchain.cmake" CACHE PATH "toolchain file")
+SET(CMAKE_TOOLCHAIN_FILE "$ENV{VITASDK}/share/vita.toolchain.cmake" CACHE PATH "toolchain file")
+SET(Boost_USE_STATIC_RUNTIME ON)
 include("$ENV{VITASDK}/share/vita.cmake" REQUIRED)
 list(APPEND DEFINES
 	GLES2_HEADER
@@ -492,7 +493,6 @@ if(VITA)
 		SceLibKernel_stub 
 		SceSysmodule_stub
 		SceCtrl_stub
-		SceGxm_stub
 		ScePgf_stub
 		ScePvf_stub		
 		SceIofilemgr_stub
@@ -503,7 +503,7 @@ if(VITA)
 		SceFios2Kernel_stub
 		ScePower_stub
 		SceAudio_stub
-		m
+		SceVshBridge_stub
 		z
 		fluidlite
 		FLAC

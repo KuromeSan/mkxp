@@ -51,6 +51,8 @@
 #include <taihen.h>
 #include <psp2/power.h>
 #include <psp2/appmgr.h>
+#include <psp2/vshbridge.h>
+#include <psp2/kernel/modulemgr.h>
 #include <psp2/kernel/processmgr.h> 
 #include <psp2/io/fcntl.h>
 #include <psp2/io/stat.h>
@@ -61,12 +63,20 @@ extern "C"{
 #include <stdlib.h>
 #include <string.h>
 
-#include "vita/blit.h"
 #include "vita/fios2.h" // vitasdk headers are broken for userland fios2.. so uh use mine!
 
 
-int _newlib_heap_size_user   = 104857600;
-unsigned int sceLibcHeapSize = 104857600;
+#define NEWLIB_HEAP_SIZE 241172480
+#define LIBC_HEAP_SIZE 134217728
+#define RGSS_STACK_SIZE 1048576
+
+#if (NEWLIB_HEAP_SIZE + LIBC_HEAP_SIZE + RGSS_STACK_SIZE) > 382730240
+#error Memory layout exceeds maximum memory
+#endif
+// must be less than 365MB total.
+
+int _newlib_heap_size_user = NEWLIB_HEAP_SIZE;
+unsigned int sceLibcHeapSize = LIBC_HEAP_SIZE;
 unsigned int sceLibcHeapExtendedAlloc = 1;
 
 #endif
@@ -231,20 +241,33 @@ int main(int argc, char *argv[])
         scePowerSetBusClockFrequency(222);
 	scePowerSetGpuClockFrequency(222);
         scePowerSetGpuXbarClockFrequency(166);
-
-      	blit_setup();
-
+        
         int ret = 0;
+        
+        
         // Load Kernel Module
 	char titleid[12];        
 	char kplugin_path[0x1000];
         sceAppMgrAppParamGetString(0, 12, titleid , 256);
         snprintf(kplugin_path, 0x1000, "ux0:app/%s/module/gpu_fix.skprx", titleid);
-                
-        ret = taiLoadStartKernelModule(kplugin_path, 0, NULL, 0);
-        if(ret < 0 && ret != 0x8002d013){
-        	printf("Failed to load gpu_fix.skprx 0x%x\n",ret);
-        	sceKernelExitProcess(0);
+   	
+   	
+   	Debug() << "Looking for gpu_fix...";
+        
+   	int64_t unk;
+        SceUID gpuFixId = _vshKernelSearchModuleByName("gpu_fix", &unk);
+        
+        if(gpuFixId < 0){ // if gpu_fix not loaded...
+        	// Load gpu_fix...
+        	Debug() << "gpu_fix not found, loading!";
+		ret = taiLoadStartKernelModule(kplugin_path, 0, NULL, 0);
+		if(ret < 0){
+			Debug() << "Failed to load Kernel Module.";
+			sceKernelExitProcess(1);
+		}
+        }
+        else{
+        	Debug() << "gpu_fix already loaded.";
         }
        
         // Create data folders. 
@@ -275,17 +298,14 @@ int main(int argc, char *argv[])
 
 	ret = sceFiosKernelOverlayAddForProcess02(pid, &ov, &ovId);
 	if(ret < 0){
-        	printf("Failed to create fios2 overlay 0x%x\n", ret);
-        	sceKernelExitProcess(0);
+        	Debug() << "Failed to create fios2 overlay";
+        	sceKernelExitProcess(1);
         }
-        
-
-        
 #endif
 
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
-
+	
 
 	/* initialize SDL first */
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
@@ -414,11 +434,15 @@ int main(int argc, char *argv[])
 
 	/* Load and post key bindings */
 	rtData.bindingUpdateMsg.post(loadBindings(conf));
-
+	
 	/* Start RGSS thread */
+#ifndef __vita__
 	SDL_Thread *rgssThread =
 	        SDL_CreateThread(rgssThreadFun, "rgss", &rtData);
-
+#else
+	SDL_Thread *rgssThread =
+		SDL_CreateThreadWithStackSize(rgssThreadFun, "rgss", RGSS_STACK_SIZE,  &rtData);
+#endif
 	/* Start event processing */
 	eventThread.process(rtData);
 

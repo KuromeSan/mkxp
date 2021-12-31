@@ -133,11 +133,8 @@ struct BitmapPrivate
 	}
 #ifdef __vita__
 	void vitaGpuFix(){
-		
+		return;
 		// Force texture upload.		
-		glFlush();
-		glFinish();
-
 		TEXFBO &gpTex = shState->gpTexFBO(0, 0);
 		
 		GLMeta::blitBegin(gpTex);
@@ -153,7 +150,7 @@ struct BitmapPrivate
 
 	void prepareDraw()
 	{
-		// TODO: Find out why the fuck this doenst work
+		//TODO: Find out why the fuck this doenst work
 		//if(!gpuFixed)
 		//	vitaGpuFix();
 	}
@@ -1033,6 +1030,8 @@ static void applyShadow(SDL_Surface *&in, const SDL_PixelFormat &fm, const SDL_C
 
 void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 {
+
+
 	guardDisposed();
 
 	GUARD_MEGA;
@@ -1045,9 +1044,7 @@ void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 
 	if (str[0] == ' ' && str[1] == '\0')
 		return;
-#ifdef DEBUG
-	printf("Bitmap::drawText() -> \"%s\"\n", str);
-#endif
+
 
 	TTF_Font *font = p->font->getSdlFont();
 	const Color &fontColor = p->font->getColor();
@@ -1087,7 +1084,7 @@ void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 			outline = TTF_RenderUTF8_Blended(font, str, co);
 
 		p->ensureFormat(outline, SDL_PIXELFORMAT_ABGR8888);
-		SDL_Rect outRect = {OUTLINE_SIZE, OUTLINE_SIZE, txtSurf->w, txtSurf->h}; 
+		SDL_Rect outRect = {OUTLINE_SIZE, OUTLINE_SIZE, txtSurf->w, txtSurf->h};
 
 		SDL_SetSurfaceBlendMode(txtSurf, SDL_BLENDMODE_BLEND);
 		SDL_BlitSurface(txtSurf, NULL, outline, &outRect);
@@ -1129,7 +1126,7 @@ void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 	Vec2i gpTexSize;
 	shState->ensureTexSize(txtSurf->w, txtSurf->h, gpTexSize);
 
-	bool fastBlit = !p->touchesTaintedArea(posRect) && txtAlpha == 1.0f;
+	bool fastBlit = !p->touchesTaintedArea(posRect) && txtAlpha == 1.0f;	
 	if (fastBlit)
 	{
 		if (squeeze == 1.0f && !shState->config().subImageFix)
@@ -1175,7 +1172,6 @@ void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 				TEX::bind(p->gl.tex);
 				if (!subImage)
 				{
-					
 					TEX::uploadSubImage(posRect.x, posRect.y,
 					                    posRect.w, posRect.h,
 					                    txtSurf->pixels, GL_RGBA);
@@ -1188,7 +1184,6 @@ void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 					                           txtSurf, GL_RGBA);
 					GLMeta::subRectImageEnd();
 				}
-				
 			}
 		}
 		else
@@ -1215,7 +1210,7 @@ void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 		/* Aquire a partial copy of the destination
 		 * buffer we're about to render to */
 		TEXFBO &gpTex2 = shState->gpTexFBO(posRect.w, posRect.h);
-				
+
 		GLMeta::blitBegin(gpTex2);
 		GLMeta::blitSource(p->gl);
 		GLMeta::blitRectangle(posRect, Vec2i());
@@ -1224,7 +1219,7 @@ void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 		FloatRect bltRect(0, 0,
 		                  (float) (gpTexSize.x * squeeze) / gpTex2.width,
 		                  (float) gpTexSize.y / gpTex2.height);
-		
+
 		BltShader &shader = shState->shaders().blt;
 		shader.bind();
 		shader.setTexSize(gpTexSize);
@@ -1248,12 +1243,12 @@ void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 
 		p->popViewport();
 	}
-	
+
 	SDL_FreeSurface(txtSurf);
 	p->addTaintedArea(posRect);
 
 	p->onModified();
-	
+
 }
 
 /* http://www.lemoda.net/c/utf8-to-ucs2/index.html */
@@ -1368,10 +1363,13 @@ void Bitmap::taintArea(const IntRect &rect)
 
 void Bitmap::releaseResources()
 {
-	if (p->megaSurface)
+	if (p->megaSurface){
 		SDL_FreeSurface(p->megaSurface);
-	else
+	}
+	else{
 		shState->texPool().release(p->gl);
+	}
 
 	delete p;
 }
+

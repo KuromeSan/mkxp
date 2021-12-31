@@ -73,17 +73,12 @@ namespace TEX
 
 	static inline void bind(ID id)
 	{
-	#ifdef DEBUG
-			printf("TEX::bind(0x%x)\n", id.gl);
-	#endif
 		gl.BindTexture(GL_TEXTURE_2D, id.gl);
-	#ifdef DEBUG			
-			GLenum err = GL_NO_ERROR;
-			while((err = gl.GetError()) != GL_NO_ERROR)
-			{
-			    printf("TEX::uploadSubImage -> glGetError: %x\n", err);
-			}	
-	#endif	
+		GLenum err = GL_NO_ERROR;
+		while((err = gl.GetError()) != GL_NO_ERROR)
+		{
+		    printf("TEX::uploadSubImage -> glGetError: %x\n", err);
+		}	
 				
 	}
 
@@ -98,44 +93,24 @@ namespace TEX
 	}
 	static inline void uploadSubImage(GLint x, GLint y, GLsizei width, GLsizei height, const void *data, GLenum format)
 	{
-	#ifdef DEBUG
-		printf("TEX::uploadSubImage(%i,%i,%i,%i,0x%x,0x%x)\n", x,y,width,height,data,format);
-	/*	printf("== BEGIN DATA DUMP ==\n");
-		unsigned int sz = (width*height)*4;
-		unsigned char* data2 = (unsigned char*)data;
-		for(int i = 0; i <= sz; i++){
-			printf("%02X", data2[i]);
-		}
-		printf("\n== END DATA DUMP ==\n");
-	*/
-	#endif
 		gl.TexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, format, GL_UNSIGNED_BYTE, data);
-		
-	#ifdef DEBUG
 		
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("TEX::uploadSubImage -> glGetError: %x\n", err);
 		}	
-	#endif	
 	}
 
 	static inline void allocEmpty(GLsizei width, GLsizei height)
 	{
-	#ifdef DEBUG
-			printf("TEX::allocEmpty(%u, %u)\n", width, height);
-	#endif
-
 		gl.TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 		
-	#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("TEX::uploadSubImage -> glGetError: %x\n", err);
 		}	
-	#endif	
 	}
 
 	static inline void setRepeat(bool mode)
@@ -160,98 +135,68 @@ namespace FBO
 	inline ID gen()
 	{
 
-#ifdef DEBUG
-		int threadId = sceKernelGetThreadId();
-		printf("FBO::gen() called on thread 0x%x\n",threadId);
-#endif
 		ID id;
 		gl.GenFramebuffers(1, &id.gl);
-#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("FBO::gen -> glGetError: %x\n", err);
 		}		
-#endif
 		return id;
 	}
 
 	static inline void del(ID id)
 	{
-#ifdef DEBUG
-		int threadId = sceKernelGetThreadId();
-		printf("FBO::del(%x) called on thread 0x%x\n",id, threadId);
-#endif
 		gl.DeleteFramebuffers(1, &id.gl);
-#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("FBO::del -> glGetError: %x\n", err);
 		}		
-#endif
 	}
 
 	static inline void bind(ID id)
 	{
-#ifdef DEBUG
-		int threadId = sceKernelGetThreadId();
-		printf("FBO::bind(%x) called on thread 0x%x\n",id, threadId);
-#endif
 		gl.BindFramebuffer(GL_FRAMEBUFFER, id.gl);
-#ifdef DEBUG
+
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("FBO::bind -> glGetError: %x\n", err);
 		}		
-#endif
 
 	}
 
 	static inline void unbind()
 	{
 		bind(ID(0));
-#ifdef DEBUG
+
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("FBO::unbind -> glGetError: %x\n", err);
 		}		
-#endif
 	}
 
 	static inline void setTarget(TEX::ID target, unsigned colorAttach = 0)
 	{
-#ifdef DEBUG
-		int threadId = sceKernelGetThreadId();
-		printf("FBO::setTarget(%x,%x) called on thread 0x%x\n",target, colorAttach, threadId);
-#endif
 		gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttach, GL_TEXTURE_2D, target.gl, 0);
-#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("FBO::setTarget -> glGetError: %x\n", err);
 		}		
-#endif
-
 	}
 
 	static inline void clear()
 	{
-#ifdef DEBUG
-		int threadId = sceKernelGetThreadId();
-		printf("FBO::clear() called on thread 0x%x\n", threadId);
-#endif
 		gl.Clear(GL_COLOR_BUFFER_BIT);
-#ifdef DEBUG
+
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("FBO::clear -> glGetError: %x\n", err);
 		}		
-#endif
 	}
 }
 template<GLenum target>
@@ -262,121 +207,74 @@ struct GenericBO
 	static inline ID gen()
 	{
 		ID id;
-#ifdef DEBUG
-		int threadId = sceKernelGetThreadId();
-		printf("GenericBO::gen() called on thread 0x%x\n", threadId);
-#endif
 		gl.GenBuffers(1, &id.gl);
-#ifdef DEBUG
+
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("GenericBO::gen -> glGetError: %x\n", err);
 		}		
-#endif
 		return id;
 	}
 
 	static inline void del(ID id)
 	{
 
-#ifdef DEBUG
-		int threadId = sceKernelGetThreadId();
-		printf("GenericBO::del(%x) called on thread 0x%x\n", id, threadId);
-#endif
+
 		gl.DeleteBuffers(1, &id.gl);
-#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("GenericBO::del -> glGetError: %x\n", err);
 		}		
-#endif
+
 	}
 
 	static inline void bind(ID id)
 	{
-#ifdef DEBUG
-		int threadId = sceKernelGetThreadId();
-		printf("GenericBO::bind(%x) called on thread 0x%x\n", id, threadId);
-#endif
 		gl.BindBuffer(target, id.gl);
-#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("GenericBO::bind -> glGetError: %x\n", err);
 		}		
-#endif
 	}
 
 	static inline void unbind()
 	{
 		bind(ID(0));
-#ifdef DEBUG
-		GLenum err = GL_NO_ERROR;
-		while((err = gl.GetError()) != GL_NO_ERROR)
-		{
-		    printf("GenericBO::unbind -> glGetError: %x\n", err);
-		}		
-#endif
-
 	}
 
 	static inline void uploadData(GLsizeiptr size, const GLvoid *data, GLenum usage = GL_STATIC_DRAW)
 	{
-#ifdef DEBUG
-		int threadId = sceKernelGetThreadId();
-		printf("GenericBO::uploadData(%x, %x, %x) called on thread 0x%x\n", size, data, usage, threadId);
-#endif
 		gl.BufferData(target, size, data, usage);
-#ifdef DEBUG
-		printf("GenericBO::uploadData - iphone 6s \n");
-#endif
-#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("GenericBO::uploadData -> glGetError: %x\n", err);
 		}		
-#endif
 	}
 
 	static inline void uploadSubData(GLintptr offset, GLsizeiptr size, const GLvoid *data)
 	{
-#ifdef DEBUG
-		int threadId = sceKernelGetThreadId();
-		printf("GenericBO::uploadSubData(%x, %x, %x) called on thread 0x%x\n", offset, size, data, threadId);
-#endif
 		gl.BufferSubData(target, offset, size, data);
-#ifdef DEBUG
-		printf("GenericBO::uploadSubData - iphone 6s \n", offset, size, data);
-#endif
 
-#ifdef DEBUG
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("GenericBO::uploadSubData -> glGetError: %x\n", err);
 		}
-#endif		
 	}
 
 	static inline void allocEmpty(GLsizeiptr size, GLenum usage = GL_STATIC_DRAW)
 	{
-#ifdef DEBUG
-		int threadId = sceKernelGetThreadId();
-		printf("GenericBO::allocEmpty(%x, %x) called on thread 0x%x\n", size, usage, threadId);
-#endif
-
 		uploadData(size, 0, usage);
-#ifdef DEBUG
+
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("GenericBO::allocEmpty -> glGetError: %x\n", err);
 		}
-#endif		
 
 	}
 };
