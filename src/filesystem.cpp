@@ -44,6 +44,7 @@
 #include <iconv.h>
 #endif
 
+
 struct SDLRWIoContext
 {
 	SDL_RWops *ops;
@@ -460,11 +461,31 @@ cacheEnumCB(void *d, const char *origdir, const char *fname)
 	return PHYSFS_ENUM_OK;
 }
 
+#ifdef DoPathCacheCache
+
+typedef struct {
+	char folder[1028];
+	uint64_t location;
+} PathTableOfContents;
+
+typedef struct {
+	uint64_t total_folders;
+	PathTableOfContents* contents;	
+}
+
+typedef struct {
+	uint64_t total_files;
+	char* entries;
+} PathFolderFiles;
+
+
+#endif
+
 void FileSystem::createPathCache()
 {
 	CacheEnumData data(p);
 	data.fileLists.push(&p->fileLists[""]);
-	PHYSFS_enumerate("", cacheEnumCB, &data);
+	PHYSFS_enumerate("", cacheEnumCB, &data);	
 	p->havePathCache = true;
 }
 

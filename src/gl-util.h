@@ -141,12 +141,15 @@ namespace FBO
 		while((err = gl.GetError()) != GL_NO_ERROR)
 		{
 		    printf("FBO::gen -> glGetError: %x\n", err);
-		}		
+		}
+				
+		
 		return id;
 	}
 
 	static inline void del(ID id)
 	{
+		
 		gl.DeleteFramebuffers(1, &id.gl);
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
@@ -157,6 +160,7 @@ namespace FBO
 
 	static inline void bind(ID id)
 	{
+		
 		gl.BindFramebuffer(GL_FRAMEBUFFER, id.gl);
 
 		GLenum err = GL_NO_ERROR;
@@ -194,7 +198,7 @@ namespace FBO
 
 		GLenum err = GL_NO_ERROR;
 		while((err = gl.GetError()) != GL_NO_ERROR)
-		{
+		{   
 		    printf("FBO::clear -> glGetError: %x\n", err);
 		}		
 	}

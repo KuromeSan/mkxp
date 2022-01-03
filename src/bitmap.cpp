@@ -103,59 +103,26 @@ struct BitmapPrivate
 	 * ourselves the expensive blending calculation */
 	pixman_region16_t tainted;
 
-	bool gpuFixed;
 	sigc::connection prepareCon;
 
 
 	BitmapPrivate(Bitmap *self)
 	    : self(self),
 	      megaSurface(0),
-	      surface(0),
-	      gpuFixed(false)
+	      surface(0)
 	{
 		format = SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
 
 		font = &shState->defaultFont();
 		pixman_region_init(&tainted);
 
-#ifdef __vita__
-		prepareCon = shState->prepareDraw.connect(sigc::mem_fun(this, &BitmapPrivate::prepareDraw));
-#endif
 	}
 
 	~BitmapPrivate()
 	{
 		SDL_FreeFormat(format);
 		pixman_region_fini(&tainted);
-#ifdef __vita__
-		prepareCon.disconnect();
-#endif 
 	}
-#ifdef __vita__
-	void vitaGpuFix(){
-		return;
-		// Force texture upload.		
-		TEXFBO &gpTex = shState->gpTexFBO(0, 0);
-		
-		GLMeta::blitBegin(gpTex);
-		GLMeta::blitSource(gl);
-		GLMeta::blitRectangle(IntRect(0,0,0,0), IntRect(0,0,0,0));
-		GLMeta::blitEnd();
-		
-		glFlush();
-		glFinish();
-		
-		gpuFixed = true;
-	}
-
-	void prepareDraw()
-	{
-		//TODO: Find out why the fuck this doenst work
-		//if(!gpuFixed)
-		//	vitaGpuFix();
-	}
-#endif
-
 	
 	void allocSurface()
 	{
@@ -269,9 +236,6 @@ struct BitmapPrivate
 			surface = 0;
 		}
 		
-		//gpuFixed = false;
-		// TODO: Make this happen only on PrepareDraw, but like actually working
-		vitaGpuFix();
 		
 		self->modified();
 	}
@@ -1204,9 +1168,6 @@ void Bitmap::drawText(const IntRect &rect, const char *str, int align)
 	}
 	else
 	{
-#ifdef DEBUG
-		printf("Bitmap::drawText() -> !fastBlit (!!!)\n");
-#endif
 		/* Aquire a partial copy of the destination
 		 * buffer we're about to render to */
 		TEXFBO &gpTex2 = shState->gpTexFBO(posRect.w, posRect.h);

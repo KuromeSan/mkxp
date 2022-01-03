@@ -65,14 +65,22 @@ extern "C"{
 
 #include "vita/fios2.h" // vitasdk headers are broken for userland fios2.. so uh use mine!
 
+#define DO_HARDWARE_TRANSFERS YES
 
-#define NEWLIB_HEAP_SIZE 241172480
-#define LIBC_HEAP_SIZE 134217728
-#define RGSS_STACK_SIZE 1048576
+#define NEWLIB_HEAP_SIZE 209715200
+#define LIBC_HEAP_SIZE 41943040
+#define RGSS_STACK_SIZE 5242880
+
+#define GPU_MEM_SIZE 16777216
 
 #if (NEWLIB_HEAP_SIZE + LIBC_HEAP_SIZE + RGSS_STACK_SIZE) > 382730240
-#error Memory layout exceeds maximum memory
+#error Memory usage, exceeds maximum memory for userland applications.
 #endif
+
+#if (GPU_MEM_SIZE) > 134217728
+#error GPU Memory exceeds maximum memblck size
+#endif
+
 // must be less than 365MB total.
 
 int _newlib_heap_size_user = NEWLIB_HEAP_SIZE;
@@ -250,7 +258,7 @@ int main(int argc, char *argv[])
 	char kplugin_path[0x1000];
         sceAppMgrAppParamGetString(0, 12, titleid , 256);
         snprintf(kplugin_path, 0x1000, "ux0:app/%s/module/gpu_fix.skprx", titleid);
-   	
+  
    	
    	Debug() << "Looking for gpu_fix...";
         
@@ -301,12 +309,30 @@ int main(int argc, char *argv[])
         	Debug() << "Failed to create fios2 overlay";
         	sceKernelExitProcess(1);
         }
+        
 #endif
 
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
-	
-
+#ifdef __vita__
+	SDL_setenv("VITA_PVR_SKIP_INIT", "enable", 1);
+	PVRSRV_PSP2_APPHINT hint;
+        
+        sceKernelLoadStartModule("vs0:sys/external/libfios2.suprx", 0, NULL, 0, NULL, NULL);
+        sceKernelLoadStartModule("vs0:sys/external/libc.suprx", 0, NULL, 0, NULL, NULL);
+        sceKernelLoadStartModule("app0:/module/libgpu_es4_ext.suprx", 0, NULL, 0, NULL, NULL);
+        sceKernelLoadStartModule("app0:/module/libIMGEGL.suprx", 0, NULL, 0, NULL, NULL);
+        PVRSRVInitializeAppHint(&hint);
+        #if DO_HARDWARE_TRANSFERS == NO
+        hint.bDisableHWTextureUpload = 1;
+        hint.bDisableHWTQBufferBlit = 1;
+        hint.bDisableHWTQMipGen = 1;
+        hint.bDisableHWTQNormalBlit = 1;
+        hint.bDisableHWTQTextureUpload = 1;
+        #endif
+        hint.ui32DriverMemorySize = GPU_MEM_SIZE;
+        PVRSRVCreateVirtualAppHint(&hint);
+#endif
 	/* initialize SDL first */
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
 	{

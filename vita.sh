@@ -39,13 +39,13 @@ cd ../vpk
 
 if [ -f "soundfont.sf2" ]; then
     echo "soundfont.sf2 already downloaded."
-else 
+else
     echo "Downloading soundfont.sf2..."
     wget https://www.dropbox.com/s/qxdvoxxcexsvn43/GMGSx.sf2?dl=1 -O soundfont.sf2
 fi
 
 chmod 777 -R .
- 
+
 echo "Build complete."
 
 cd ..

@@ -26,12 +26,6 @@
 #include "etc-internal.h"
 #include "etc.h"
 
-#ifdef __vita__
-#include "gl-util.h"
-using namespace std;
-#include <list>
-#endif
-
 #include <sigc++/signal.h>
 
 class Font;
