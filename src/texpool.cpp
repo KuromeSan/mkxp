@@ -58,7 +58,10 @@ struct TexPoolPrivate
 
 	/* Contains all cached TexFBOs, sorted by release time */
 	std::list<TEXFBO> priorityQueue;
-
+#ifdef __vita__
+	/* Maximum allowed framebuffer objects, useful on PowerVR drivers which limit the number of FBO's avalible. */
+	const uint32_t maxObjs;
+#endif
 	/* Maximal allowed cache memory */
 	const uint32_t maxMemSize;
 
@@ -70,19 +73,31 @@ struct TexPoolPrivate
 
 	/* Has this pool been disabled? */
 	bool disabled;
-
+#ifdef __vita__
+	TexPoolPrivate(uint32_t maxMemSize, uint32_t maxObjs)
+#else
 	TexPoolPrivate(uint32_t maxMemSize)
+#endif
 	    : maxMemSize(maxMemSize),
+#ifdef __vita__
+	      maxObjs(maxObjs),
+#endif
 	      memSize(0),
 	      objCount(0),
 	      disabled(true)
 	{}
 };
-
+#ifdef __vita__
+TexPool::TexPool(uint32_t maxMemSize, uint32_t maxObjs)
+{
+	p = new TexPoolPrivate(maxMemSize, maxObjs);
+}
+#else
 TexPool::TexPool(uint32_t maxMemSize)
 {
 	p = new TexPoolPrivate(maxMemSize);
 }
+#endif
 
 TexPool::~TexPool()
 {
@@ -121,7 +136,7 @@ TEXFBO TexPool::request(int width, int height)
 		p->memSize -= byteCount(size);
 		--p->objCount;
 
-		Debug() << "TexPool: <?+> (" << width << height << ")";
+		//Debug() << "TexPool: <?+> (" << width << height << ")";
 
 		return cnode.obj;
 	}
@@ -137,7 +152,7 @@ TEXFBO TexPool::request(int width, int height)
 	TEXFBO::allocEmpty(cnode.obj, width, height);
 	TEXFBO::linkFBO(cnode.obj);
 
-	Debug() << "TexPool: <?-> (" << width << height << ")";
+	//Debug() << "TexPool: <?-> (" << width << height << ")";
 
 	return cnode.obj;
 }
@@ -153,7 +168,7 @@ void TexPool::release(TEXFBO &obj)
 	if (p->disabled)
 	{
 		/* If we're disabled, delete without caching */
-		Debug() << "TexPool: <!#> (" << obj.width << obj.height << ")";
+		//Debug() << "TexPool: <!#> (" << obj.width << obj.height << ")";
 		TEXFBO::fini(obj);
 		return;
 	}
@@ -161,16 +176,22 @@ void TexPool::release(TEXFBO &obj)
 	Size size(obj.width, obj.height);
 
 	uint32_t newMemSize = p->memSize + byteCount(size);
-
+	
 	/* If caching this object would spill over the allowed memory budget,
 	 * delete least used objects until we're good again */
+#ifdef __vita__
+	while ( (newMemSize > p->maxMemSize) || (p->objCount > p->maxObjs) )
+#else
 	while (newMemSize > p->maxMemSize)
+#endif
 	{
 		if (p->objCount == 0)
 			break;
-
-		Debug() << "TexPool: <!~> Size:" << p->memSize;
-
+#ifdef __vita__
+		//Debug() << "TexPool: <!~> Size:" << p->memSize << " objCount: " << p->objCount;
+#else
+		//Debug() << "TexPool: <!~> Size:" << p->memSize;
+#endif
 		/* Retrieve object with lowest priority for deletion */
 		CacheNode last;
 		last.obj = p->priorityQueue.back();
@@ -190,7 +211,7 @@ void TexPool::release(TEXFBO &obj)
 		newMemSize -= byteCount(removedSize);
 		--p->objCount;
 
-		Debug() << "TexPool: <!-> (" << last.obj.width << last.obj.height << ")";
+		//Debug() << "TexPool: <!-> (" << last.obj.width << last.obj.height << ")";
 	}
 
 	p->memSize = newMemSize;
@@ -204,8 +225,11 @@ void TexPool::release(TEXFBO &obj)
 	bucket.push_back(cnode);
 
 	++p->objCount;
-
-	Debug() << "TexPool: <!+> (" << obj.width << obj.height << ") Current size:" << p->memSize;
+#ifdef __vita__
+	//Debug() << "TexPool: <!+> (" << obj.width << obj.height << ") Current size:" << p->memSize << " Current objCount: " << p->objCount;
+#else
+	//Debug() << "TexPool: <!+> (" << obj.width << obj.height << ") Current size:" << p->memSize;
+#endif
 }
 
 void TexPool::disable()

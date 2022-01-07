@@ -65,9 +65,10 @@ extern "C"{
 
 #include "vita/fios2.h" // vitasdk headers are broken for userland fios2.. so uh use mine!
 
-#define DO_HARDWARE_TRANSFERS YES
+#define DO_HARDWARE_TRANSFERS 1
 
-#define NEWLIB_HEAP_SIZE 209715200
+//#define NEWLIB_HEAP_SIZE 209715200
+#define NEWLIB_HEAP_SIZE 157286400
 #define LIBC_HEAP_SIZE 41943040
 #define RGSS_STACK_SIZE 5242880
 
@@ -323,13 +324,15 @@ int main(int argc, char *argv[])
         sceKernelLoadStartModule("app0:/module/libgpu_es4_ext.suprx", 0, NULL, 0, NULL, NULL);
         sceKernelLoadStartModule("app0:/module/libIMGEGL.suprx", 0, NULL, 0, NULL, NULL);
         PVRSRVInitializeAppHint(&hint);
-        #if DO_HARDWARE_TRANSFERS == NO
+        
+        #if DO_HARDWARE_TRANSFERS == 0
         hint.bDisableHWTextureUpload = 1;
         hint.bDisableHWTQBufferBlit = 1;
         hint.bDisableHWTQMipGen = 1;
         hint.bDisableHWTQNormalBlit = 1;
         hint.bDisableHWTQTextureUpload = 1;
         #endif
+        
         hint.ui32DriverMemorySize = GPU_MEM_SIZE;
         PVRSRVCreateVirtualAppHint(&hint);
 #endif

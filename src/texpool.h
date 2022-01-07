@@ -29,7 +29,11 @@ struct TexPoolPrivate;
 class TexPool
 {
 public:
+#ifdef __vita__
+	TexPool(uint32_t maxMemSize = 5000000 /* 5 MB */, uint32_t maxObjs = 100);
+#else
 	TexPool(uint32_t maxMemSize = 20000000 /* 20 MB */);
+#endif
 	~TexPool();
 
 	TEXFBO request(int width, int height);

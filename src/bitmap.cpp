@@ -123,6 +123,21 @@ struct BitmapPrivate
 		SDL_FreeFormat(format);
 		pixman_region_fini(&tainted);
 	}
+#ifdef __vita__
+	void vitaGpuFix(){
+		printf("vitaGpuFix()\n");
+		// Force texture upload.
+		TEXFBO &gpTex = shState->gpTexFBO(0, 0);
+		GLMeta::blitBegin(gpTex);
+		GLMeta::blitSource(gl);
+		GLMeta::blitRectangle(IntRect(0,0,0,0), IntRect(0,0,0,0));
+		GLMeta::blitEnd();
+		
+		glFlush();
+		glFinish();
+	}
+#endif
+
 	
 	void allocSurface()
 	{
@@ -227,16 +242,20 @@ struct BitmapPrivate
 		SDL_FreeSurface(surf);
 		surf = surfConv;
 	}
-
 	void onModified(bool freeSurface = true)
 	{
+
 		if (surface && freeSurface)
 		{
 			SDL_FreeSurface(surface);
 			surface = 0;
 		}
-		
-		
+
+#ifdef __vita__
+		// TODO: Find out why the fuck this is required.
+		vitaGpuFix();
+#endif
+
 		self->modified();
 	}
 };
@@ -534,9 +553,11 @@ void Bitmap::fillRect(int x, int y,
 
 void Bitmap::fillRect(const IntRect &rect, const Vec4 &color)
 {
+
 	guardDisposed();
 
 	GUARD_MEGA;
+
 
 	p->fillRect(rect, color);
 
@@ -546,7 +567,6 @@ void Bitmap::fillRect(const IntRect &rect, const Vec4 &color)
 	else
 		/* Fill op */
 		p->addTaintedArea(rect);
-
 	p->onModified();
 }
 
