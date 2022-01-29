@@ -124,6 +124,7 @@ struct BitmapPrivate
 		pixman_region_fini(&tainted);
 	}
 #ifdef __vita__
+#ifdef PVR
 	void vitaGpuFix(){
 		printf("vitaGpuFix()\n");
 		// Force texture upload.
@@ -136,6 +137,7 @@ struct BitmapPrivate
 		glFlush();
 		glFinish();
 	}
+#endif
 #endif
 
 	
@@ -252,8 +254,10 @@ struct BitmapPrivate
 		}
 
 #ifdef __vita__
+#ifdef PVR
 		// TODO: Find out why the fuck this is required.
 		vitaGpuFix();
+#endif
 #endif
 
 		self->modified();

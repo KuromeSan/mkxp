@@ -150,14 +150,15 @@ static void setupShaderSource(GLuint shader, GLenum type,
 	gl.ShaderSource(shader, i, shaderSrc, shaderSrcSize);
 }
 
-void Shader::init(const unsigned char *vert, int vertSize,
+/*void Shader::init(const unsigned char *vert, int vertSize,
                   const unsigned char *frag, int fragSize,
                   const char *vertName, const char *fragName,
                   const char *programName)
 {
 	GLint success;
+	printf("Compiling Program: %s\n", programName);
 #ifdef __vita__
-	/* is this shader already cached? */
+#ifdef CACHE_SHADERS
 	char fpath[0x1000];
 	SceUID fd;
 	int ret;
@@ -177,7 +178,9 @@ void Shader::init(const unsigned char *vert, int vertSize,
 	{
 		compile_shader:
 #endif
-	/* Compile vertex shader */
+#endif
+	printf("Compiling: %s\n", vertName);
+
 	setupShaderSource(vertShader, GL_VERTEX_SHADER, vert, vertSize);
 	gl.CompileShader(vertShader);
 	gl.GetShaderiv(vertShader, GL_COMPILE_STATUS, &success);
@@ -191,7 +194,7 @@ void Shader::init(const unsigned char *vert, int vertSize,
 	}
 
 
-	/* Compile fragment shader */
+	printf("Compiling: %s\n", fragShader);
 	setupShaderSource(fragShader, GL_FRAGMENT_SHADER, frag, fragSize);
 	gl.CompileShader(fragShader);
 
@@ -205,7 +208,6 @@ void Shader::init(const unsigned char *vert, int vertSize,
 	                    fragName, programName);
 	}
 
-	/* Link shader program */
 	gl.AttachShader(program, vertShader);
 	gl.AttachShader(program, fragShader);
 
@@ -217,7 +219,7 @@ void Shader::init(const unsigned char *vert, int vertSize,
 
 
 #ifdef __vita__
-		/* Cache Shader */
+#ifdef CACHE_SHADERS
 		GLenum binaryFormat = GL_SGX_PROGRAM_BINARY_IMG; 		
 		GLint length = 0;
 		GLsizei lengthWritten = 0;
@@ -236,7 +238,6 @@ void Shader::init(const unsigned char *vert, int vertSize,
 
 	}
 	else{
-		/* Load cached shader */
 		compiled = 0;
 		GLint sz = stats.st_size;
 		GLvoid* programBinaryData = (GLvoid*)malloc(sz);
@@ -265,8 +266,67 @@ void Shader::init(const unsigned char *vert, int vertSize,
 	                    "GLSL: An error occured while linking program '%s' (vertex '%s', fragment '%s')",
 	                    programName, vertName, fragName);
 	}
-}
+}*/
 
+void Shader::init(const unsigned char *vert, int vertSize,
+                  const unsigned char *frag, int fragSize,
+                  const char *vertName, const char *fragName,
+                  const char *programName)
+{
+	GLint success;
+	printf("Compiling Program: %s\n", programName);
+
+	/* Compile vertex shader */
+
+	printf("Compiling: %s.vert\n", vertName);
+	setupShaderSource(vertShader, GL_VERTEX_SHADER, vert, vertSize);
+	gl.CompileShader(vertShader);
+
+	gl.GetShaderiv(vertShader, GL_COMPILE_STATUS, &success);
+
+	if (!success)
+	{
+		printShaderLog(vertShader);
+		throw Exception(Exception::MKXPError,
+	                    "GLSL: An error occured while compiling vertex shader '%s' in program '%s'",
+	                    vertName, programName);
+	}
+
+	/* Compile fragment shader */
+	printf("Compiling: %s.frag\n", fragName);
+	setupShaderSource(fragShader, GL_FRAGMENT_SHADER, frag, fragSize);
+	gl.CompileShader(fragShader);
+
+	gl.GetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
+
+	if (!success)
+	{
+		printShaderLog(fragShader);
+		throw Exception(Exception::MKXPError,
+	                    "GLSL: An error occured while compiling fragment shader '%s' in program '%s'",
+	                    fragName, programName);
+	}
+
+	/* Link shader program */
+	gl.AttachShader(program, vertShader);
+	gl.AttachShader(program, fragShader);
+
+	gl.BindAttribLocation(program, Position, "position");
+	gl.BindAttribLocation(program, TexCoord, "texCoord");
+	gl.BindAttribLocation(program, Color, "color");
+
+	gl.LinkProgram(program);
+
+	gl.GetProgramiv(program, GL_LINK_STATUS, &success);
+
+	if (!success)
+	{
+		printProgramLog(program);
+		throw Exception(Exception::MKXPError,
+	                    "GLSL: An error occured while linking program '%s' (vertex '%s', fragment '%s')",
+	                    programName, vertName, fragName);
+	}
+}
 void Shader::initFromFile(const char *_vertFile, const char *_fragFile,
                           const char *programName)
 {

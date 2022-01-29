@@ -57,9 +57,11 @@
 #include <psp2/io/fcntl.h>
 #include <psp2/io/stat.h>
 #include <psp2/kernel/modulemgr.h>
+#ifdef PVR
 extern "C"{
 #include <gpu_es4/psp2_pvr_hint.h>
 }
+#endif
 #include <stdlib.h>
 #include <string.h>
 
@@ -316,6 +318,7 @@ int main(int argc, char *argv[])
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
 #ifdef __vita__
+#ifdef PVR
 	SDL_setenv("VITA_PVR_SKIP_INIT", "enable", 1);
 	PVRSRV_PSP2_APPHINT hint;
         
@@ -335,6 +338,7 @@ int main(int argc, char *argv[])
         
         hint.ui32DriverMemorySize = GPU_MEM_SIZE;
         PVRSRVCreateVirtualAppHint(&hint);
+#endif
 #endif
 	/* initialize SDL first */
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)

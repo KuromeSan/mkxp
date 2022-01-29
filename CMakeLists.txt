@@ -273,6 +273,7 @@ set(EMBEDDED_INPUT
 	assets/icon.png
 )
 
+
 if (RGSS2)
 	list(APPEND DEFINES
 		RGSS2
@@ -518,9 +519,11 @@ if(VITA)
 		ogg
 		mikmod
 		taihen_stub
-		libgpu_es4_ext_stub_weak
-		libIMGEGL_stub_weak
-		libGLESv2_stub_weak
+		pib
+		libScePiglet_stub
+#		libgpu_es4_ext_stub_weak
+#		libIMGEGL_stub_weak
+#		libGLESv2_stub_weak
 	)
 endif()
 

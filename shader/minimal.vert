@@ -1,8 +1,6 @@
-
-uniform mat4 projMat;
-attribute vec2 position;
-
-void main()
+void main(float2 position : POSITION,
+          uniform float4x4 projMat,
+          float4 out v_position : POSITION)
 {
-	gl_Position = projMat * vec4(position, 0, 1);
+    v_position = mul(float4(position, 0, 1), projMat);
 }
